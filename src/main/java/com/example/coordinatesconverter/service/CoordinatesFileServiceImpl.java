@@ -1,6 +1,6 @@
 package com.example.coordinatesconverter.service;
 
-import com.example.coordinatesconverter.util.CoordinateStandardizer;
+import com.example.coordinatesconverter.util.CoordinateNormalizer;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
@@ -16,16 +16,15 @@ import java.util.List;
 @RequiredArgsConstructor
 public class CoordinatesFileServiceImpl implements CoordinatesFileService {
 
-    private final CoordinateStandardizer coordinateStandardizer;
+    private final CoordinateNormalizer coordinateNormalizer;
 
     @Override
     public List<String> processCoordinatesFile(MultipartFile file) throws IOException {
         List<String> standardizedCoordinates = new ArrayList<>();
         try (BufferedReader reader = new BufferedReader(new InputStreamReader(file.getInputStream()))) {
-            reader.lines().map(coordinateStandardizer::standardizeCoordinatesText).forEach(standardizedCoordinates::add);
+            reader.lines().map(coordinateNormalizer::normalizeCoordinatesText).forEach(standardizedCoordinates::add);
         }
         return standardizedCoordinates;
     }
-
 
 }

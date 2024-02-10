@@ -3,9 +3,9 @@ package com.example.coordinatesconverter.util;
 import org.springframework.stereotype.Component;
 
 @Component
-public class CoordinateStandardizer {
+public class CoordinateNormalizer {
 
-    public String standardizeCoordinatesText(String text) {
+    public String normalizeCoordinatesText(String text) {
 
         // Add  ° before N and S in specific case of N x.x E x.x
         text = text.replaceAll("(\\b[NS])\\s+", "°$1 ");
@@ -90,25 +90,29 @@ public class CoordinateStandardizer {
         // Handle case with N, and E, are before number
         text = text.replaceAll("N,(\\d+\\.\\d+),E,(\\d+\\.\\d+)","$1°N,$2°E");
 
-        // Add missing , after N and S
-        text = text.replaceAll("((\\d+).(\\d+)(°[NS]?))((\\d+).(\\d+)(°[EW]?))","$1,$5");
-
-        // Replace , symbols with . in decimal number
+        // Replace , symbols with . in decimal number in DD
         text = text.replaceAll("(\\d+),(\\d+)(°[NS]?),(\\d+),(\\d+)(°[EW]?)", "$1.$2$3,$4.$5$6");
+
+        // Replace , symbols with . in decimal number in DMS
+        text = text.replaceAll("(\\d+)(°\\d+'\\d+),(\\d+)([NS]?),(\\d+)(°\\d+'\\d+),(\\d+)([EW]?)",
+                "$1$2.$3$4,$5$6.$7$8");
+
+        // Add missing , after N and S in DD
+        text = text.replaceAll("((\\d+).(\\d+)(°[NS]?))((\\d+).(\\d+)(°[EW]?))","$1,$5");
 
         // Handle °Nx.x°Ex.x -> x.x°Nx.x°E
         text = text.replaceAll("°([NSWE])(\\d+\\.\\d+)", "$2°$1,");
 
-        //deletes letters without °
+        // Remove letters without °
         text = text.replaceAll("(?<![°'\"])[NSWE]", "");
 
-        //deletes , before text
+        // Remove , before text
         text = text.replaceAll("(?<![^,]),", "");
 
-        //deletes ° before number
+        // Remove ° before number
         text = text.replaceAll("^°", "");
 
-        //deletes ° after "
+        // Remove ° after "
         text = text.replaceAll("\"°", "\"");
 
         // Handle the case of duplicated indicators
@@ -116,6 +120,19 @@ public class CoordinateStandardizer {
 
         // Regex to remove the last character if it's not 'E' or 'W'
         text = text.replaceAll("[^EW]$", "");
+
+        // Add missing , after N and S in DMS
+        text = text.replaceAll("(\\d+°\\d+'\\d+\\.\\d+\")(N|S)(\\d+°\\d+'\\d+\\.\\d+\")(E|W)"
+                , "$1$2,$3$4");
+
+        // Handle case  x°x'x.x°N,x°E°x'x.x°E -> x°x'x.x°N,x°x'x.x°E
+        text = text.replaceAll("(\\d+°\\d+'\\d+\\.\\d+°)([NS]),(\\d+)(°[EW])(°\\d+'\\d+\\.\\d+°[EW])"
+                , "$1$2,$3$5");
+
+        // Handle case x°x'x.x°N,x°x'x.x°E -> x°x'x.x"N,x°x'x.x"E
+        text = text.replaceAll("(\\d+°\\d+'\\d+\\.\\d+)°([NS]),(\\d+°\\d+'\\d+\\.\\d+)°([EW])"
+                , "$1\"$2,$3\"$4");
+
 
         return text;
     }
