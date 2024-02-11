@@ -1,9 +1,5 @@
 package com.example.coordinatesconverter.util;
 
-import com.example.coordinatesconverter.model.DDCoordinates;
-import com.example.coordinatesconverter.model.DMSCoordinates;
-import com.example.coordinatesconverter.service.CoordinateConversionService;
-import com.example.coordinatesconverter.service.CoordinateConversionServiceImpl;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
@@ -19,7 +15,6 @@ public class CoordinateNormalizer {
         text = normalizeDM(text);
         text = normalizeDMS(text);
         text = normalizeMixedCoordinates(text);
-        //convertDDLonToDMSLon("49°50'26.45304\"N,18.2883317°E");
         return text;
     }
 
@@ -215,67 +210,15 @@ public class CoordinateNormalizer {
         int lastIndex = 0;
         while (matcher.find()) {
             String matchedLongitude = matcher.group(2);
-            String convertedLongitude = convertDDLonToDMSLon(matchedLongitude);
-            System.out.println(convertedLongitude);
+            String convertedLongitude = NormalizerConverterHelper.convertDDLonToDMSLon(matchedLongitude);
             result.append(text, lastIndex, matcher.start(2));
             result.append(convertedLongitude);
-            result.append(matcher.group(3)); // Append direction (E/W)
-            lastIndex = matcher.end(3); // Update lastIndex to the end of direction
+            result.append(matcher.group(3));
+            lastIndex = matcher.end(3);
         }
         result.append(text, lastIndex, text.length());
 
         return result.toString();
-    }
-
-
-
-
-    private static String convertDDLonToDMSLon(String matchedLongitude) {
-        CoordinateConversionServiceImpl coordinateConversionService = new CoordinateConversionServiceImpl();
-        double longitude = Double.parseDouble(matchedLongitude);
-        DDCoordinates ddCoordinates = new DDCoordinates(0, longitude);
-        DMSCoordinates dmsCoordinates = coordinateConversionService.convertDDToDMS(ddCoordinates);
-
-        String formattedLongitude = formatLongitude(dmsCoordinates);
-        return formattedLongitude;
-    }
-
-    private static String formatLongitude(DMSCoordinates dmsCoordinates) {
-        double longitudeDegrees = dmsCoordinates.getLonDegrees();
-        double longitudeMinutes = dmsCoordinates.getLonMinutes();
-        double longitudeSeconds = dmsCoordinates.getLonSeconds();
-
-        return String.format("%d°%d'%f\"", (int) longitudeDegrees, (int) longitudeMinutes, longitudeSeconds);
-    }
-
-    private static String convertDDLatToDMSLat(String text) {
-        CoordinateConversionServiceImpl coordinateConversionService = new CoordinateConversionServiceImpl();
-
-        String regex = "\\b(\\d+\\.\\d+)°[NS],\\d+°\\d+'\\d+\\.\\d+\"[EW]\\b";
-        Pattern pattern = Pattern.compile(regex);
-        Matcher matcher = pattern.matcher(text);
-
-        if (matcher.find()) {
-            String latitudeString = matcher.group(1);
-            double latitude = Double.parseDouble(latitudeString);
-            DDCoordinates ddCoordinates = new DDCoordinates(latitude, 0);
-            DMSCoordinates dmsCoordinates = coordinateConversionService.convertDDToDMS(ddCoordinates);
-
-            String formattedLatitude = formatLatitude(dmsCoordinates);
-
-            System.out.println(formattedLatitude);
-            return formattedLatitude;
-        }
-
-        return "";
-    }
-
-    private static String formatLatitude(DMSCoordinates dmsCoordinates) {
-        double latitudeDegrees = dmsCoordinates.getLatDegrees();
-        double latitudeMinutes = dmsCoordinates.getLatMinutes();
-        double latitudeSeconds = dmsCoordinates.getLatSeconds();
-
-        return String.format("%d°%d'%f\"", (int) latitudeDegrees, (int) latitudeMinutes, latitudeSeconds);
     }
 
 }
