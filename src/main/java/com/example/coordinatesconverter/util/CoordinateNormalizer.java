@@ -3,6 +3,8 @@ package com.example.coordinatesconverter.util;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -12,8 +14,8 @@ public class CoordinateNormalizer {
 
     public String normalizeCoordinatesText(String text) {
         text = normalizeDD(text);
-        text = normalizeDM(text);
-        text = normalizeDMS(text);
+        //text = normalizeDM(text);
+        //text = normalizeDMS(text);
         text = normalizeMixedCoordinates(text);
         return text;
     }
@@ -21,6 +23,9 @@ public class CoordinateNormalizer {
     private String normalizeDD(String text) {
         // Replace whitespace before North (N) or South (S) with degree symbol (°) and the direction
         text = text.replaceAll("(\\b[NS])\\s+", "°$1 ");
+
+        // Handle x°x'x.xN -> x°x'x.x"N
+        text = text.replaceAll("(\\d+°\\d+'\\d+\\.\\d+)([NWSE])", "$1\"$2");
 
         // Add degree symbol (°) between the numeric value and the direction (N/S/W/E)
         text = text.replaceAll("(\\d+(\\.\\d+)?)\\s*°?\\s*([NSWE])", "$1°$3");
@@ -86,7 +91,7 @@ public class CoordinateNormalizer {
         text = text.replaceAll("([NS])(\\d+\\.\\d+),([EW])(\\d+\\.\\d+)", "$2°$1,$4°$3");
 
         // Handle format with missing direction indicators
-        text = text.replaceAll("(N)?(\\d+\\.\\d+)°(?:N|S)?, (\\d+\\.\\d+)°(?:E|W)?\n", "$2°$1, $4°$5");
+        text = text.replaceAll("(N)?(\\d+\\.\\d+)°[NS]?, (\\d+\\.\\d+)°[EW]?\n", "$2°$1, $4°$5");
 
         // Handle specific format with N and E before the numbers
         text = text.replaceAll("N,(\\d+\\.\\d+),E,(\\d+\\.\\d+)", "$1°N,$2°E");
@@ -102,6 +107,9 @@ public class CoordinateNormalizer {
 
         // Handle missing °N by adding °N
         text = text.replaceAll("(\\d+\\.\\d+°(?!N)),((\\d+\\.\\d+°(?=E))E)", "$1N,$2");
+
+        // Fix E° inside x°E°x'x.x"E
+        text = text.replaceAll("(\\d+\\.\\d+°[NS]),(\\d+°)([EW]°)(\\d+)", "$1,$2$4");
 
         // Handle missing ° before direction
         text = text.replaceAll("°([NSWE])(\\d+\\.\\d+)", "$2°$1,");
@@ -201,24 +209,50 @@ public class CoordinateNormalizer {
         return text;
     }
 
-    private String normalizeMixedCoordinates(String text) {
-        String regex = "\\b(\\d+°\\d+'\\d+\\.\\d+\"[NS],(\\d+\\.\\d+))°([EW])\\b";
-        Pattern pattern = Pattern.compile(regex);
-        Matcher matcher = pattern.matcher(text);
+    public static String normalizeMixedCoordinates(String text) {
+
+        final Map<String, String> patternsToMethods = new HashMap<>();
+
+        patternsToMethods.put("\\b(\\d+°\\d+'\\d+\\.\\d+\"[NS],(\\d+\\.\\d+))°([EW])\\b", "convertDDLonToDMSLon");
+        patternsToMethods.put("\\b((\\d+\\.\\d+))°([NS]),(\\d+°\\d+'\\d+\\.\\d+)\\\"([EW])\\b", "convertDDLatToDMSLat");
+        patternsToMethods.put("\\b((\\d+.\\d+))°([NS]),\\d+°\\d+.\\d+'([EW])\\b", "convertDDLatToDMLat");
+        patternsToMethods.put("\\b\\d+°\\d+.\\d+'([NS]),(\\d+.\\d+)°([EW])\\b", "convertDDLonToDMLon");
 
         StringBuilder result = new StringBuilder();
         int lastIndex = 0;
-        while (matcher.find()) {
-            String matchedLongitude = matcher.group(2);
-            String convertedLongitude = NormalizerConverterHelper.convertDDLonToDMSLon(matchedLongitude);
-            result.append(text, lastIndex, matcher.start(2));
-            result.append(convertedLongitude);
-            result.append(matcher.group(3));
-            lastIndex = matcher.end(3);
+
+        for (Map.Entry<String, String> entry : patternsToMethods.entrySet()) {
+            String regex = entry.getKey();
+            String conversionMethod = entry.getValue();
+
+            Pattern pattern = Pattern.compile(regex);
+            Matcher matcher = pattern.matcher(text);
+
+            while (matcher.find()) {
+                String matchedCoordinate = matcher.group(2);
+                String convertedCoordinate = convertCoordinate(conversionMethod, matchedCoordinate);
+                result.append(text, lastIndex, matcher.start(2));
+                result.append(convertedCoordinate);
+                result.append(matcher.group(3));
+                lastIndex = matcher.end(3);
+            }
         }
+
         result.append(text, lastIndex, text.length());
 
         return result.toString();
+    }
+
+    private static String convertCoordinate(String conversionMethod, String coordinate) {
+        return switch (conversionMethod) {
+            case "convertDDLonToDMSLon" -> NormalizerConverterHelper.convertDDLonToDMSLon(coordinate);
+            case "convertDDLatToDMSLat" -> NormalizerConverterHelper.convertDDLatToDMSLat(coordinate);
+            case "convertDDLonToDMLon" -> NormalizerConverterHelper.convertDDToDMLon(coordinate);
+            case "convertDDLatToDMLat" -> NormalizerConverterHelper.convertDDToDMLat(coordinate);
+            case "convertDMLonToDMSLon" -> NormalizerConverterHelper.convertDMToDMSLon(coordinate);
+            case "convertDMLatToDMSLat" -> NormalizerConverterHelper.convertDMToDMSLat(coordinate);
+            default -> coordinate;
+        };
     }
 
 }

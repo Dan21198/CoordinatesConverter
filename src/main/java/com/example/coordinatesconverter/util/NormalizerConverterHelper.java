@@ -29,8 +29,7 @@ public class NormalizerConverterHelper {
         double latitude = Double.parseDouble(matchedLatitude);
         DDCoordinates ddCoordinates = new DDCoordinates(latitude, 0);
         DMSCoordinates dmsCoordinates = coordinateConversionService.convertDDToDMS(ddCoordinates);
-
-        return formatLongitude(dmsCoordinates);
+        return formatLatitude(dmsCoordinates);
     }
 
     public static String formatLatitude(DMSCoordinates dmsCoordinates) {
@@ -44,6 +43,7 @@ public class NormalizerConverterHelper {
     public static String convertDDToDMLon(String matchedLongitude) {
         CoordinateConversionServiceImpl coordinateConversionService = new CoordinateConversionServiceImpl();
         double longitude = Double.parseDouble(matchedLongitude);
+        System.out.println(longitude);
         DDCoordinates ddCoordinates = new DDCoordinates(0, longitude);
         DMCoordinates dmCoordinates = coordinateConversionService.convertDDToDM(ddCoordinates);
 
