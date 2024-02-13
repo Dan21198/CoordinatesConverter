@@ -43,7 +43,7 @@ public class NormalizerConverterHelper {
     public static String convertDDToDMLon(String matchedLongitude) {
         CoordinateConversionServiceImpl coordinateConversionService = new CoordinateConversionServiceImpl();
         double longitude = Double.parseDouble(matchedLongitude);
-        System.out.println(longitude);
+
         DDCoordinates ddCoordinates = new DDCoordinates(0, longitude);
         DMCoordinates dmCoordinates = coordinateConversionService.convertDDToDM(ddCoordinates);
 
@@ -77,8 +77,8 @@ public class NormalizerConverterHelper {
         CoordinateConversionServiceImpl coordinateConversionService = new CoordinateConversionServiceImpl();
         double longitudeDegrees = extractDegrees(matchedLongitude);
         double longitudeMinutes = extractMinutes(matchedLongitude);
-        DMSCoordinates dmsCoordinates = coordinateConversionService.convertDMToDMS(new DMCoordinates(longitudeDegrees,
-                longitudeMinutes, 0,0));
+        DMSCoordinates dmsCoordinates = coordinateConversionService.convertDMToDMS(new DMCoordinates(0,
+                0, longitudeDegrees,longitudeMinutes));
 
         return formatLongitudeDMS(dmsCoordinates);
     }
@@ -93,7 +93,8 @@ public class NormalizerConverterHelper {
         return formatLatitudeDMS(dmsCoordinates);
     }
 
-    private static double extractDegrees(String dmCoordinate) {
+    private static double extractDegrees(String dmCoordinate)
+    {
         return Double.parseDouble(dmCoordinate.split("°")[0]);
     }
 
@@ -109,6 +110,7 @@ public class NormalizerConverterHelper {
         double longitudeSeconds = dmsCoordinates.getLonSeconds();
 
         return String.format("%d°%d'%f\"", (int) longitudeDegrees, (int) longitudeMinutes, longitudeSeconds);
+       // return String.format("%d°%d'%f\"", (int) longitudeDegrees, (int) longitudeMinutes, longitudeSeconds);
     }
 
     public static String formatLatitudeDMS(DMSCoordinates dmsCoordinates) {
@@ -117,6 +119,7 @@ public class NormalizerConverterHelper {
         double latitudeSeconds = dmsCoordinates.getLatSeconds();
 
         return String.format("%d°%d'%f\"", (int) latitudeDegrees, (int) latitudeMinutes, latitudeSeconds);
+        //return String.format("%d°%d'%f\"", (int) latitudeDegrees, (int) latitudeMinutes, latitudeSeconds);
     }
 
 

@@ -55,7 +55,13 @@ public class CoordinateConversionServiceImpl implements CoordinateConversionServ
         double lonDegrees = dmCoordinates.getLonDegrees();
         double lonMinutes = dmCoordinates.getLonMinutes();
 
-        return new DMSCoordinates(latDegrees, latMinutes, 0, lonDegrees, lonMinutes, 0);
+        double latSeconds = (latMinutes % 1) * 60;
+        double lonSeconds = (lonMinutes % 1) * 60;
+
+        latMinutes = Math.floor(latMinutes);
+        lonMinutes = Math.floor(lonMinutes);
+
+        return new DMSCoordinates(latDegrees, latMinutes, latSeconds, lonDegrees, lonMinutes, lonSeconds);
     }
 
     @Override

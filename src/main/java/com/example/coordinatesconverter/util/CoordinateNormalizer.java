@@ -16,7 +16,7 @@ public class CoordinateNormalizer {
         text = normalizeDD(text);
         //text = normalizeDM(text);
         //text = normalizeDMS(text);
-        text = normalizeMixedCoordinates(text);
+        text = normalizeMixedCoordinatesForDD(text);
         return text;
     }
 
@@ -209,14 +209,9 @@ public class CoordinateNormalizer {
         return text;
     }
 
-    public static String normalizeMixedCoordinates(String text) {
+    public static String normalizeMixedCoordinatesForDD(String text) {
 
-        final Map<String, String> patternsToMethods = new HashMap<>();
-
-        patternsToMethods.put("\\b(\\d+°\\d+'\\d+\\.\\d+\"[NS],(\\d+\\.\\d+))°([EW])\\b", "convertDDLonToDMSLon");
-        patternsToMethods.put("\\b((\\d+\\.\\d+))°([NS]),(\\d+°\\d+'\\d+\\.\\d+)\\\"([EW])\\b", "convertDDLatToDMSLat");
-        patternsToMethods.put("\\b((\\d+.\\d+))°([NS]),\\d+°\\d+.\\d+'([EW])\\b", "convertDDLatToDMLat");
-        patternsToMethods.put("\\b\\d+°\\d+.\\d+'([NS]),(\\d+.\\d+)°([EW])\\b", "convertDDLonToDMLon");
+        final Map<String, String> patternsToMethods = getPatternMap();
 
         StringBuilder result = new StringBuilder();
         int lastIndex = 0;
@@ -241,6 +236,19 @@ public class CoordinateNormalizer {
         result.append(text, lastIndex, text.length());
 
         return result.toString();
+    }
+
+    private static Map<String, String> getPatternMap() {
+        final Map<String, String> patternsToMethods = new HashMap<>();
+
+        patternsToMethods.put("\\b(\\d+°\\d+'\\d+\\.\\d+\"[NS],(\\d+\\.\\d+))°([EW])\\b", "convertDDLonToDMSLon");
+        patternsToMethods.put("\\b((\\d+\\.\\d+))°([NS]),(\\d+°\\d+'\\d+\\.\\d+)\\\"([EW])\\b", "convertDDLatToDMSLat");
+        patternsToMethods.put("\\b((\\d+.\\d+))°([NS]),\\d+°\\d+.\\d+'([EW])\\b", "convertDDLatToDMLat");
+        patternsToMethods.put("\\b\\d+°\\d+.\\d+'([NS]),(\\d+.\\d+)°([EW])\\b", "convertDDLonToDMLon");
+        patternsToMethods.put("\\b((\\d+°\\d+.\\d+'))([NS]),\\d+°\\d+'\\d+\\.\\d+\"([EW])\\b", "convertDMLatToDMSLat");
+        patternsToMethods.put("\\b\\d+°\\d+'\\d+\\.\\d+\"([NS]),(\\d+°\\d+.\\d+')([EW])\\b", "convertDMLonToDMSLon");
+
+        return patternsToMethods;
     }
 
     private static String convertCoordinate(String conversionMethod, String coordinate) {

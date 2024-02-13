@@ -118,6 +118,25 @@ public class CoordinatesFileControllerTest {
     }
 
     @Test
+    public void printTestProcessConvertedCoordinatesFileFromFile() throws IOException {
+        String fileContent =
+                "49°50'26.45304\"N, 18.2883317E\n" +
+                        "18.2883317°N, 49°50'26.45304\"E\n" +
+                        "49°50.440884'N, 49°50'26.45304\"E\n" +
+                        "49°50'26.45304\"N, 18°17.299920'E\n" +
+                        "49°50.440884'N,18.288332°E\n"+
+                        "49.840681°N,18°17.299902'E\n";
+
+        MockMultipartFile file = new MockMultipartFile("coordinates.txt", fileContent.getBytes());
+
+        List<String> result = coordinatesFileController.processCoordinatesFile(file);
+
+        for (String line : result) {
+            System.out.println("Processed Coordinate: " + line);
+        }
+    }
+
+    @Test
     public void printTestProcessCoordinatesFileFromFileForDM() throws IOException {
         String fileContent =
                 "49°50.440884'N, 18°17.299902'E\n" +
