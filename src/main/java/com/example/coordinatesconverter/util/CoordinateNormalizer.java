@@ -14,8 +14,8 @@ public class CoordinateNormalizer {
 
     public String normalizeCoordinatesText(String text) {
         text = normalizeDD(text);
-        //text = normalizeDM(text);
-        //text = normalizeDMS(text);
+        text = normalizeDM(text);
+        text = normalizeDMS(text);
         text = normalizeMixedCoordinatesForDD(text);
         return text;
     }
@@ -24,17 +24,14 @@ public class CoordinateNormalizer {
         // Replace whitespace before North (N) or South (S) with degree symbol (°) and the direction
         text = text.replaceAll("(\\b[NS])\\s+", "°$1 ");
 
-        // Handle x°x'x.xN -> x°x'x.x"N
-        text = text.replaceAll("(\\d+°\\d+'\\d+\\.\\d+)([NWSE])", "$1\"$2");
-
-        // Add degree symbol (°) between the numeric value and the direction (N/S/W/E)
+        // Add degree symbol ° between the numeric value and the direction (N/S/W/E)
         text = text.replaceAll("(\\d+(\\.\\d+)?)\\s*°?\\s*([NSWE])", "$1°$3");
 
         // Remove all whitespace
         text = text.replaceAll("\\s+", "");
 
         // Replace commas, semicolons, or multiple spaces with a single comma
-        text = text.replaceAll("[,;\\s]+", ",");
+        text = text.replaceAll("[,;]+", ",");
 
         // Replace specific quotation marks with standard double quotes
         text = text.replaceAll("“", "\"");
@@ -43,10 +40,7 @@ public class CoordinateNormalizer {
         text = text.replaceAll("''", "\"");
 
         // Trim leading and trailing commas, semicolons, or spaces
-        text = text.replaceAll("^[,;\\s]+|[;\\s]+$", "");
-
-        // Ensure negative sign is correctly placed before longitude value
-        text = text.replaceAll("(?<![\\d-])(-)(-?\\d+\\.\\d+°[NS]),", "$1$2,");
+        text = text.replaceAll("^[,;]+|[,;]+$", "");
 
         // Replace multiple consecutive dashes with a single comma
         text = text.replaceAll("(?<!-)-(?!-)|--(?!-)", ",-");
@@ -60,29 +54,38 @@ public class CoordinateNormalizer {
         // Remove trailing comma
         text = text.replaceAll(",$", "");
 
-        // Ensure negative sign is correctly placed before longitude value
-        text = text.replaceAll(",-(\\d)", ",-$1");
-
         // Remove consecutive commas
         text = text.replaceAll(",,+", ",");
 
-        // Handle decimal degrees format with direction before longitude
+        // Handle ., before longitude
         text = text.replaceAll("([NSWE])\\.,(\\d)", "$1,$2");
 
-        // Handle decimal degrees format with direction before longitude
+        // Handle . before longitude
         text = text.replaceAll("([NSWE])\\.(\\d)", "$1,$2");
 
-        // Handle missing °E by adding °N and °E
+        // Handle °E before Lon
+        text = text.replaceAll("(\\d+\\.\\d+°N?),(E|°E)?(\\d+\\.\\d+)", "$1,$3");
+
+        // Handle °W before Lon
+        text = text.replaceAll("(\\d+\\.\\d+°S?),(W|°W)?(\\d+\\.\\d+)", "$1,$3");
+
+        // Handle missing °N by adding °N and °E
         text = text.replaceAll("(\\d+\\.\\d+),(\\d+\\.\\d+)°E", "$1°N,$2°E");
+
+        // Handle missing °S by adding °S and °W
+        text = text.replaceAll("(\\d+\\.\\d+),(\\d+\\.\\d+)°W", "$1°S,$2°W");
+
+        // Handle missing °E
+        text = text.replaceAll("(\\d+\\.\\d+°N?),([\\d.]++)(?!°E)", "$1,$2°E");
+
+        // Handle missing °W
+        text = text.replaceAll("(\\d+\\.\\d+°S?),([\\d.]++)(?!°W)", "$1,$2°W");
 
         // Handle swapped °E and °N
         text = text.replaceAll("(\\d+\\.\\d+)°E,(\\d+\\.\\d+)°N", "$2°N,$1°E");
 
-        // Handle missing °E by adding °E
-        text = text.replaceAll("(\\d+\\.\\d+°[NSWE]?),([\\d.]++)(?!°E|°W)", "$1,$2°E");
-
-        // Handle missing °N by adding °E
-        text = text.replaceAll("(\\d+\\.\\d+°[NSWE]?),(E|W)?(\\d+\\.\\d+)", "$1,$3°E");
+        // Handle swapped °W and °S
+        text = text.replaceAll("(\\d+\\.\\d+)°W,(\\d+\\.\\d+)°S", "$2°S,$1°W");
 
         // Handle missing °N and °E by adding both
         text = text.replaceAll("(\\d+\\.\\d+),(\\d+\\.\\d+)", "$1°N,$2°E");
@@ -108,13 +111,10 @@ public class CoordinateNormalizer {
         // Handle missing °N by adding °N
         text = text.replaceAll("(\\d+\\.\\d+°(?!N)),((\\d+\\.\\d+°(?=E))E)", "$1N,$2");
 
-        // Fix E° inside x°E°x'x.x"E
-        text = text.replaceAll("(\\d+\\.\\d+°[NS]),(\\d+°)([EW]°)(\\d+)", "$1,$2$4");
-
-        // Handle missing ° before direction
+        // Handle direction before decimal number
         text = text.replaceAll("°([NSWE])(\\d+\\.\\d+)", "$2°$1,");
 
-        // Remove direction indicators
+        // Remove direction indicators without °, ' or "
         text = text.replaceAll("(?<![°'\"])[NSWE]", "");
 
         // Remove comma before text
@@ -136,8 +136,10 @@ public class CoordinateNormalizer {
     }
 
     private String normalizeDM(String text) {
-        // Remove any extra commas that might result from the replacements
-        text = text.replaceAll(",,+", ",");
+        // replace " for ' in DM format
+        text = text.replaceAll("(\\d+°\\d+\\.\\d+)([NSWE],\\d+°\\d+\\.\\d+'[NSWE])", "$1',$3");
+        text = text.replaceAll("(\\d+°\\d+\\.\\d+')([NSWE],\\d+°\\d+\\.\\d+)\"([NSWE])", "$1$2'$3");
+
 
         // Handle the case where °E is missing
         text = text.replaceAll("(\\d+\\.\\d+),(\\d+\\.\\d+)°E", "$1°N,$2°E");
@@ -148,6 +150,9 @@ public class CoordinateNormalizer {
     private String normalizeDMS(String text) {
         // Add " before N, S, E, W in DMS
         text = text.replaceAll("((\\d+°)(\\d+'\\d+(\\.\\d+)?\")[NSWE])", "$1,");
+
+        // Handle x°x'x.xN -> x°x'x.x"N
+        text = text.replaceAll("(\\d+°\\d+'\\d+\\.\\d+)([NWSE])", "$1\"$2");
 
         // Remove commas, semicolons, or spaces at the beginning or end of the text
         text = text.replaceAll("^[,;\\s]+|[.,;'\"\\s]+$", "");
@@ -171,7 +176,7 @@ public class CoordinateNormalizer {
         text = text.replaceAll(",,+", ",");
 
         // Handle the case where °N is missing
-        text = text.replaceAll("(\\d+\\.\\d+°[NSWE]?),([\\d.]++)(?!°E|°W)", "$1,$2°E");
+       // text = text.replaceAll("(\\d+\\.\\d+°[NSWE]?),([\\d.]++)(?!°E|°W)", "$1,$2°E");
 
         text = text.replaceAll("(\\d+\\.\\d+°),(\\d+\\.\\d+°E)", "$1N,$2");
 
@@ -205,6 +210,9 @@ public class CoordinateNormalizer {
 
         // Fix ,- to - at beginning of line
         text = text.replaceAll("(?m)^(,-)", "-");
+
+        // Fix E° inside x°E°x'x.x"E
+        text = text.replaceAll("(\\d+\\.\\d+°[NS]),(\\d+°)([EW]°)(\\d+)", "$1,$2$4");
 
         return text;
     }

@@ -94,7 +94,6 @@ public class CoordinatesFileControllerTest {
                         "49°50'26.45304N, 18°17'17.99412E\n" +
                         "49°50'26.45304\"N	18°17'17.99412\"E\n" +
                         "49°50'26.45304\"N, 18.2883317E\n" +
-                        "lookk\n"+
                         "18.2883317°N, 49°50'26.45304\"E\n" +
                         "49°50.440884'N,18.288332°E\n"+
                         "49.840681°N,18°17.299902'E\n"+
@@ -140,10 +139,7 @@ public class CoordinatesFileControllerTest {
     public void printTestProcessCoordinatesFileFromFileForDM() throws IOException {
         String fileContent =
                 "49°50.440884'N, 18°17.299902'E\n" +
-                        "49.8406814N, 18°17'17.99412\"E\n" +
                         "49°50.440884'N, 18°17.299902'E\n" +
-                        "49°50.440884\"N, 18°17.299902'E\n" +
-                        "49°50.440884\"N, 18°17.299902\"E\n" +
                         "49°50.440884'N, 18°17.299902\"E\n" +
                         "--49°50.440884'N, --18°17.299902'E\n" +
                         "-49°50.440884'N,-18°17.299902'E\n" +

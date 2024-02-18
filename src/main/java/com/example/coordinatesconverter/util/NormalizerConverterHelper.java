@@ -6,9 +6,10 @@ import com.example.coordinatesconverter.model.DMSCoordinates;
 import com.example.coordinatesconverter.service.CoordinateConversionServiceImpl;
 
 public class NormalizerConverterHelper {
+    private static final CoordinateConversionServiceImpl coordinateConversionService
+            = new CoordinateConversionServiceImpl();
 
     public static String convertDDLonToDMSLon(String matchedLongitude) {
-        CoordinateConversionServiceImpl coordinateConversionService = new CoordinateConversionServiceImpl();
         double longitude = Double.parseDouble(matchedLongitude);
         DDCoordinates ddCoordinates = new DDCoordinates(0, longitude);
         DMSCoordinates dmsCoordinates = coordinateConversionService.convertDDToDMS(ddCoordinates);
@@ -25,10 +26,10 @@ public class NormalizerConverterHelper {
     }
 
     public static String convertDDLatToDMSLat(String matchedLatitude) {
-        CoordinateConversionServiceImpl coordinateConversionService = new CoordinateConversionServiceImpl();
         double latitude = Double.parseDouble(matchedLatitude);
         DDCoordinates ddCoordinates = new DDCoordinates(latitude, 0);
         DMSCoordinates dmsCoordinates = coordinateConversionService.convertDDToDMS(ddCoordinates);
+
         return formatLatitude(dmsCoordinates);
     }
 
@@ -41,7 +42,6 @@ public class NormalizerConverterHelper {
     }
 
     public static String convertDDToDMLon(String matchedLongitude) {
-        CoordinateConversionServiceImpl coordinateConversionService = new CoordinateConversionServiceImpl();
         double longitude = Double.parseDouble(matchedLongitude);
 
         DDCoordinates ddCoordinates = new DDCoordinates(0, longitude);
@@ -58,7 +58,6 @@ public class NormalizerConverterHelper {
     }
 
     public static String convertDDToDMLat(String matchedLatitude) {
-        CoordinateConversionServiceImpl coordinateConversionService = new CoordinateConversionServiceImpl();
         double latitude = Double.parseDouble(matchedLatitude);
         DDCoordinates ddCoordinates = new DDCoordinates(latitude, 0);
         DMCoordinates dmCoordinates = coordinateConversionService.convertDDToDM(ddCoordinates);
@@ -74,7 +73,6 @@ public class NormalizerConverterHelper {
     }
 
     public static String convertDMToDMSLon(String matchedLongitude) {
-        CoordinateConversionServiceImpl coordinateConversionService = new CoordinateConversionServiceImpl();
         double longitudeDegrees = extractDegrees(matchedLongitude);
         double longitudeMinutes = extractMinutes(matchedLongitude);
         DMSCoordinates dmsCoordinates = coordinateConversionService.convertDMToDMS(new DMCoordinates(0,
@@ -84,7 +82,6 @@ public class NormalizerConverterHelper {
     }
 
     public static String convertDMToDMSLat(String matchedLatitude) {
-        CoordinateConversionServiceImpl coordinateConversionService = new CoordinateConversionServiceImpl();
         double latitudeDegrees = extractDegrees(matchedLatitude);
         double latitudeMinutes = extractMinutes(matchedLatitude);
         DMSCoordinates dmsCoordinates = coordinateConversionService.convertDMToDMS(new DMCoordinates(latitudeDegrees,
@@ -110,7 +107,6 @@ public class NormalizerConverterHelper {
         double longitudeSeconds = dmsCoordinates.getLonSeconds();
 
         return String.format("%d°%d'%f\"", (int) longitudeDegrees, (int) longitudeMinutes, longitudeSeconds);
-       // return String.format("%d°%d'%f\"", (int) longitudeDegrees, (int) longitudeMinutes, longitudeSeconds);
     }
 
     public static String formatLatitudeDMS(DMSCoordinates dmsCoordinates) {
@@ -119,7 +115,6 @@ public class NormalizerConverterHelper {
         double latitudeSeconds = dmsCoordinates.getLatSeconds();
 
         return String.format("%d°%d'%f\"", (int) latitudeDegrees, (int) latitudeMinutes, latitudeSeconds);
-        //return String.format("%d°%d'%f\"", (int) latitudeDegrees, (int) latitudeMinutes, latitudeSeconds);
     }
 
 
