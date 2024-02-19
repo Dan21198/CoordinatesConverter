@@ -76,10 +76,10 @@ public class CoordinateNormalizer {
         text = text.replaceAll("(\\d+\\.\\d+),(\\d+\\.\\d+)°W", "$1°S,$2°W");
 
         // Handle missing °E
-        text = text.replaceAll("(\\d+\\.\\d+°N?),([\\d.]++)(?!°E)", "$1,$2°E");
+        text = text.replaceAll("(\\d+\\.\\d+°N),(\\d+\\.\\d++)(?!E)", "$1,$2°E");
 
         // Handle missing °W
-        text = text.replaceAll("(\\d+\\.\\d+°S?),([\\d.]++)(?!°W)", "$1,$2°W");
+        text = text.replaceAll("(\\d+\\.\\d+°S),(\\d+\\.\\d++)(?!W)", "$1,$2°W");
 
         // Handle swapped °E and °N
         text = text.replaceAll("(\\d+\\.\\d+)°E,(\\d+\\.\\d+)°N", "$2°N,$1°E");
@@ -140,9 +140,35 @@ public class CoordinateNormalizer {
         text = text.replaceAll("(\\d+°\\d+\\.\\d+)([NSWE],\\d+°\\d+\\.\\d+'[NSWE])", "$1',$3");
         text = text.replaceAll("(\\d+°\\d+\\.\\d+')([NSWE],\\d+°\\d+\\.\\d+)\"([NSWE])", "$1$2'$3");
 
+        // Handle °E before Lon
+        text = text.replaceAll("(\\d+°\\d+\\.\\d+'N?),(E|'E)?(\\d+°\\d+\\.\\d+)", "$1,$3");
 
-        // Handle the case where °E is missing
-        text = text.replaceAll("(\\d+\\.\\d+),(\\d+\\.\\d+)°E", "$1°N,$2°E");
+        // Handle °W before Lon
+        text = text.replaceAll("(\\d+°\\d+\\.\\d+'S?),(W|'W)?(\\d+°\\d+\\.\\d+)", "$1,$3");
+
+        // Handle missing °N by adding °N and °E
+        text = text.replaceAll("(\\d+°\\d+\\.\\d+),(\\d+°\\d+\\.\\d+)'E", "$1'N,$2'E");
+
+        // Handle missing °S by adding °S and °W
+        text = text.replaceAll("(\\d+°\\d+\\.\\d+),(\\d+°\\d+\\.\\d+)'W", "$1'S,$2'W");
+
+        // Handle missing °E
+        text = text.replaceAll("(\\d+°\\d+\\.\\d+'N),(\\d+°\\d+\\.\\d++')(?!E)", "$1,$2'E");
+
+        // Handle missing °W
+        text = text.replaceAll("(\\d+°\\d+\\.\\d+'S),(\\d+°\\d+\\.\\d++')(?!W)", "$1,$2'W");
+
+        // Handle swapped °E and °N
+        text = text.replaceAll("(\\d+°\\d+\\.\\d+)'E,(\\d+°\\d+\\.\\d+)'N", "$2'N,$1'E");
+
+        // Handle swapped °W and °S
+        text = text.replaceAll("(\\d+°\\d+\\.\\d+)'W,(\\d+°\\d+\\.\\d+)'S", "$2'S,$1'W");
+
+        // Handle missing °N and °E by adding both
+        text = text.replaceAll("(\\d+°\\d+\\.\\d+),(\\d+°\\d+\\.\\d+)", "$1'N,$2'E");
+
+        // Handle missing °N by adding °N
+        text = text.replaceAll("(\\d+°\\d+\\.\\d+'(?!N)),((\\d+°\\d+\\.\\d+'(?=E))E)", "$1N,$2");
 
         return text;
     }
@@ -175,13 +201,40 @@ public class CoordinateNormalizer {
         // Remove any extra commas that might result from the corrections
         text = text.replaceAll(",,+", ",");
 
-        // Handle the case where °N is missing
-       // text = text.replaceAll("(\\d+\\.\\d+°[NSWE]?),([\\d.]++)(?!°E|°W)", "$1,$2°E");
-
         text = text.replaceAll("(\\d+\\.\\d+°),(\\d+\\.\\d+°E)", "$1N,$2");
 
+        // Handle °E before Lon
+        text = text.replaceAll("(\\d+°\\d+'\\d+\\.\\d+\"N?),(E|'E)?(\\d+°\\d+'\\d+\\.\\d+)", "$1,$3");
+
+        // Handle °W before Lon
+        text = text.replaceAll("(\\d+°\\d+'\\d+\\.\\d+\"S?),(W|'W)?(\\d+°\\d+'\\d+\\.\\d+)", "$1,$3");
+
+        // Handle missing °N by adding °N and °E
+        text = text.replaceAll("(\\d+°\\d+'\\d+\\.\\d+),(\\d+°\\d+'\\d+\\.\\d+)\"E", "$1\"N,$2\"E");
+
+        // Handle missing °S by adding °S and °W
+        text = text.replaceAll("(\\d+°\\d+'\\d+\\.\\d+),(\\d+°\\d+'\\d+\\.\\d+)\"W", "$1\"S,$2\"W");
+
+        // Handle missing °E
+        text = text.replaceAll("(\\d+°\\d+'\\d+\\.\\d+\"N),(\\d+°\\d+'\\d+\\.\\d++\")(?!E)", "$1,$2\"E");
+
+        // Handle missing °W
+        text = text.replaceAll("(\\d+°\\d+'\\d+\\.\\d+\"S),(\\d+°\\d+'\\d+\\.\\d++\")(?!W)", "$1,$2\"W");
+
+        // Handle swapped °E and °N
+        text = text.replaceAll("(\\d+°\\d+'\\d+\\.\\d+)\"E,(\\d+°\\d+'\\d+\\.\\d+)\"N", "$2\"N,$1\"E");
+
+        // Handle swapped °W and °S
+        text = text.replaceAll("(\\d+°\\d+'\\d+\\.\\d+)\"W,(\\d+°\\d+'\\d+\\.\\d+)\"S", "$2\"S,$1\"W");
+
+        // Handle missing °N and °E by adding both
+        text = text.replaceAll("(\\d+°\\d+'\\d+\\.\\d+),(\\d+°\\d+'\\d+\\.\\d+)", "$1\"N,$2\"E");
+
+        // Handle missing °N by adding °N
+        text = text.replaceAll("(\\d+°\\d+'\\d+\\.\\d+\"(?!N)),((\\d+°\\d+'\\d+\\.\\d+\"(?=E))E)", "$1N,$2");
+
         // Handle the case where °N is missing
-        text = text.replaceAll("(\\d+\\.\\d+°[NSWE]?),(E|W)?(\\d+\\.\\d+)", "$1,$3°E");
+        //text = text.replaceAll("(\\d+\\.\\d+°[NSWE]?),(E|W)?(\\d+\\.\\d+)", "$1,$3°E");
 
         // Handle the case where both latitude and longitude are missing directional indicators
         text = text.replaceAll("(\\d+\\.\\d+),(\\d+\\.\\d+)", "$1°N,$2°E");
@@ -217,7 +270,7 @@ public class CoordinateNormalizer {
         return text;
     }
 
-    public static String normalizeMixedCoordinatesForDD(String text) {
+    private static String normalizeMixedCoordinatesForDD(String text) {
 
         final Map<String, String> patternsToMethods = getPatternMap();
 

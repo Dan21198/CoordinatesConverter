@@ -3,6 +3,7 @@ package com.example.coordinatesconverter.controller;
 import com.example.coordinatesconverter.service.CoordinatesFileService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -20,4 +21,24 @@ public class CoordinatesFileController {
     public List<String> processCoordinatesFile(@RequestPart MultipartFile file) throws IOException {
         return coordinatesFileService.processCoordinatesFile(file);
     }
+
+    @PostMapping("/excel")
+    public ResponseEntity<byte[]> processExcelFile(@RequestPart MultipartFile file) throws IOException {
+        return coordinatesFileService.processExcelFile(file);
+    }
+
+    @PostMapping("/word")
+    public ResponseEntity<byte[]> processWordFile(@RequestPart MultipartFile file) throws IOException {
+        return coordinatesFileService.processWordFile(file);
+    }
+
+    @PostMapping("/xml")
+    public ResponseEntity<byte[]> processXmlFile(@RequestPart MultipartFile file) throws IOException {
+        return coordinatesFileService.processXmlFile(file);
+    }
+    @PostMapping("/text")
+    public ResponseEntity<byte[]> processTextFile(@RequestPart MultipartFile file) throws IOException {
+        return coordinatesFileService.processTextFile(file);
+    }
+
 }
