@@ -9,14 +9,13 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 @Component
-@RequiredArgsConstructor
 public class CoordinateNormalizer {
 
     public String normalizeCoordinatesText(String text) {
         text = normalizeDD(text);
         text = normalizeDM(text);
         text = normalizeDMS(text);
-        text = normalizeMixedCoordinatesForDD(text);
+        text = normalizeMixedCoordinates(text);
         return text;
     }
 
@@ -270,7 +269,7 @@ public class CoordinateNormalizer {
         return text;
     }
 
-    private static String normalizeMixedCoordinatesForDD(String text) {
+    private static String normalizeMixedCoordinates(String text) {
 
         final Map<String, String> patternsToMethods = getPatternMap();
 
