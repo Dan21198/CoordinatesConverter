@@ -7,6 +7,9 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
 import org.apache.poi.ss.usermodel.*;
 
 
@@ -26,7 +29,7 @@ public class CoordinateExcelNormalizer {
         return normalizedCoordinates;
     }
 
-    private List<String> normalizeSheet(Sheet sheet) {
+    public List<String> normalizeSheet(Sheet sheet) {
         List<String> normalizedCoordinates = new ArrayList<>();
         int textColumnCount = countTextColumns(sheet);
 
@@ -95,16 +98,35 @@ public class CoordinateExcelNormalizer {
 
     private String normalizeDD(Row row) {
         StringBuilder normalizedCoordinates = new StringBuilder();
+        Pattern dmsPattern = Pattern.compile("(\\d+)°(\\d+)'(\\d+(\\.\\d+)?)\"");
+        Pattern dmPattern = Pattern.compile("(\\d+)°(\\d+(\\.\\d+)?)'");
 
         for (int i = 0; i < row.getLastCellNum(); i++) {
             Cell cell = row.getCell(i);
             if (cell != null) {
-                if (cell.getCellType() == CellType.NUMERIC) {
-                    normalizedCoordinates.append(cell.getNumericCellValue());
-                } else if (cell.getCellType() == CellType.STRING) {
-                    String cellValue = cell.getStringCellValue();
-                    String decimalNumber = cellValue.replaceAll("[^\\d.]", "");
-                    normalizedCoordinates.append(decimalNumber);
+                switch (cell.getCellType()) {
+                    case NUMERIC:
+                        normalizedCoordinates.append(cell.getNumericCellValue());
+                        break;
+                    case STRING:
+                        String cellValue = cell.getStringCellValue();
+                        Matcher dmsMatcher = dmsPattern.matcher(cellValue);
+                        Matcher dmMatcher = dmPattern.matcher(cellValue);
+                        if (dmsMatcher.find()) {
+                            String matchedLongitude = dmsMatcher.group();
+                            double ddValueLon = Double.parseDouble(NormalizerConverterHelper.convertDMSToDDLon(matchedLongitude));
+                            normalizedCoordinates.append(ddValueLon);
+                        } else if (dmMatcher.find()) {
+                            String matchedLongitude = dmMatcher.group();
+                            double ddValueLon = Double.parseDouble(NormalizerConverterHelper.convertDMToDDLon(matchedLongitude));
+                            normalizedCoordinates.append(ddValueLon);
+                        } else {
+                            String decimalNumber = cellValue.replaceAll("[^\\d.]", "");
+                            normalizedCoordinates.append(decimalNumber);
+                        }
+                        break;
+                    default:
+                        break;
                 }
             }
             if (i < row.getLastCellNum() - 1) {
@@ -117,48 +139,73 @@ public class CoordinateExcelNormalizer {
     }
 
 
+
     private String normalizeDM(Row row) {
-        StringBuilder normalizedCoordinates = new StringBuilder();
+        StringBuilder stringBuilder = new StringBuilder();
 
-        Cell degreeCell = row.getCell(0);
-        Cell decimalCell = row.getCell(1);
+        for (int i = 0; i < row.getLastCellNum(); i++) {
+            Cell cell = row.getCell(i);
+            if (cell != null) {
+                String cellValue = "";
 
-        if (degreeCell != null && degreeCell.getCellType() == CellType.NUMERIC &&
-                decimalCell != null && decimalCell.getCellType() == CellType.NUMERIC) {
-            double degrees = degreeCell.getNumericCellValue();
-            double decimal = decimalCell.getNumericCellValue();
+                if (cell.getCellType() == CellType.NUMERIC) {
+                    double numericValue = cell.getNumericCellValue();
+                    cellValue = Double.toString(numericValue);
+                } else if (cell.getCellType() == CellType.STRING) {
+                    cellValue = cell.getStringCellValue();
+                    try {
+                        double numericValue = Double.parseDouble(cellValue);
+                        cellValue = Double.toString(numericValue);
+                    } catch (NumberFormatException e) {
+                        cellValue = cellValue.replaceAll("[^\\d.]", "");
+                    }
+                }
 
-            normalizedCoordinates.append(degrees).append(" ").append(decimal);
-        } else {
-            normalizedCoordinates.append("Invalid format");
+                stringBuilder.append(cellValue);
+            }
+            if (i < row.getLastCellNum() - 1) {
+                stringBuilder.append("\t");
+            }
         }
 
-        return normalizedCoordinates.toString();
+        return stringBuilder.toString().trim();
     }
 
     private String normalizeDMS(Row row) {
-        boolean isFirstRow = true;
         StringBuilder stringBuilder = new StringBuilder();
-        for (int i = 1; i <= 6; i += 2) {
+
+        for (int i = 0; i < row.getLastCellNum(); i++) {
             Cell cell = row.getCell(i);
-            if (cell != null && cell.getCellType() == CellType.STRING) {
-                String cellValue = cell.getStringCellValue();
-                if (cellValue.matches("^\\d+(\\.\\d+)?$")) {
-                    if (isFirstRow) {
-                        stringBuilder.append(cellValue).append(" ");
+            if (cell != null) {
+                String cellValue = "";
+                if (cell.getCellType() == CellType.NUMERIC) {
+                    double numericValue = cell.getNumericCellValue();
+                    if (i == 2 || i == 5) {
+                        cellValue = String.format("%.5f", numericValue);
                     } else {
-                        String[] parts = cellValue.split("\\.");
-                        if (parts.length == 2 && parts[0].matches("^\\d+$") && parts[1].matches("^\\d+$")) {
-                            stringBuilder.append(parts[0]).append(" ").append(parts[1]).append(".");
-                        } else {
-                            stringBuilder.append("Invalid format").append(" ");
-                        }
+                        cellValue = Integer.toString((int) numericValue);
                     }
-                } else {
-                    stringBuilder.append("Invalid format").append(" ");
+                } else if (cell.getCellType() == CellType.STRING) {
+                    cellValue = cell.getStringCellValue();
+                    if (i == 2 || i == 5) {
+                        cellValue = cellValue.replaceAll("(\\d+[,.]\\d+)\\W\\w", "$1");
+                        cellValue = cellValue.replaceAll("(\\d+[,.]\\d+)[A-Z^\\W\\s]", "$1");
+                    } else {
+                        cellValue = cellValue.replaceAll("(\\d+)[,.]\\d+", "$1");
+                        cellValue = cellValue.replaceAll("[^\\d]", "");
+                    }
                 }
+
+                stringBuilder.append(cellValue);
             }
+            if (i < row.getLastCellNum() - 1) {
+                stringBuilder.append("\t");
+            }
+
         }
+
         return stringBuilder.toString().trim();
     }
+
+
 }

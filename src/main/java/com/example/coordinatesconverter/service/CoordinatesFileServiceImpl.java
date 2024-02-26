@@ -43,9 +43,7 @@ public class CoordinatesFileServiceImpl implements CoordinatesFileService {
 
     @Override
     public ResponseEntity<byte[]> processExcelFile(MultipartFile file) throws IOException {
-
-        List<String> standardizedCoordinates = coordinateExcelNormalizer.normalizeExcelCoordinates(file);
-        byte[] fileContent = createProcessedExcelFile(standardizedCoordinates);
+        byte[] fileContent = createProcessedExcelFile(file);
 
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_OCTET_STREAM);
@@ -55,19 +53,33 @@ public class CoordinatesFileServiceImpl implements CoordinatesFileService {
         return new ResponseEntity<>(fileContent, headers, HttpStatus.OK);
     }
 
-    private byte[] createProcessedExcelFile(List<String> standardizedCoordinates) throws IOException {
+    private byte[] createProcessedExcelFile(MultipartFile file) throws IOException {
+        Workbook originalWorkbook = WorkbookFactory.create(file.getInputStream());
         Workbook processedWorkbook = new XSSFWorkbook();
-        Sheet sheet = processedWorkbook.createSheet("Processed Coordinates");
 
-        for (int i = 0; i < standardizedCoordinates.size(); i++) {
-            Row row = sheet.createRow(i);
-            String[] coordinates = standardizedCoordinates.get(i).split("\t");
+        for (int i = 0; i < originalWorkbook.getNumberOfSheets(); i++) {
+            Sheet originalSheet = originalWorkbook.getSheetAt(i);
+            List<String> standardizedCoordinates = coordinateExcelNormalizer.normalizeSheet(originalSheet);
 
-            for (int j = 0; j < coordinates.length; j++) {
-                Cell cell = row.createCell(j);
-                cell.setCellValue(coordinates[j]);
+            Sheet processedSheet = processedWorkbook.createSheet(originalSheet.getSheetName());
+
+            for (int j = 0; j < standardizedCoordinates.size(); j++) {
+                Row row = processedSheet.createRow(j);
+                String[] coordinates = standardizedCoordinates.get(j).split("\t");
+
+                for (int k = 0; k < coordinates.length; k++) {
+                    Cell cell = row.createCell(k);
+                    try {
+                        double numericValue = Double.parseDouble(coordinates[k]);
+                        cell.setCellValue(numericValue);
+                    } catch (NumberFormatException e) {
+                        cell.setCellValue(coordinates[k]);
+                    }
+                }
             }
         }
+
+        originalWorkbook.close();
 
         ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
         processedWorkbook.write(outputStream);
@@ -76,27 +88,6 @@ public class CoordinatesFileServiceImpl implements CoordinatesFileService {
         return outputStream.toByteArray();
     }
 
-
-    private List<String> processExcelContent(MultipartFile file) throws IOException {
-        List<String> standardizedCoordinates = new ArrayList<>();
-        try (Workbook workbook = new XSSFWorkbook(file.getInputStream())) {
-            Iterator<Sheet> sheetIterator = workbook.sheetIterator();
-            while (sheetIterator.hasNext()) {
-                Sheet sheet = sheetIterator.next();
-                for (Row row : sheet) {
-                    Iterator<Cell> cellIterator = row.cellIterator();
-                    while (cellIterator.hasNext()) {
-                        Cell cell = cellIterator.next();
-                        if (cell.getCellType() == CellType.STRING) {
-                            String cellValue = cell.getStringCellValue();
-                            standardizedCoordinates.add(coordinateNormalizer.normalizeCoordinatesText(cellValue));
-                        }
-                    }
-                }
-            }
-        }
-        return standardizedCoordinates;
-    }
 
     @Override
     public ResponseEntity<byte[]> processWordFile(MultipartFile file) throws IOException {
