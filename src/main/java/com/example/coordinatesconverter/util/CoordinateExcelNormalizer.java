@@ -15,28 +15,32 @@ import org.apache.poi.ss.usermodel.*;
 
 @Component
 public class CoordinateExcelNormalizer {
-    public List<String> normalizeExcelCoordinates(MultipartFile file) throws IOException {
-        List<String> normalizedCoordinates = new ArrayList<>();
-
-        Workbook workbook = WorkbookFactory.create(file.getInputStream());
-
-        for (int i = 0; i < workbook.getNumberOfSheets(); i++) {
-            Sheet sheet = workbook.getSheetAt(i);
-            normalizedCoordinates.addAll(normalizeSheet(sheet));
-        }
-
-        workbook.close();
-        return normalizedCoordinates;
-    }
 
     public List<String> normalizeSheet(Sheet sheet) {
         List<String> normalizedCoordinates = new ArrayList<>();
         int textColumnCount = countTextColumns(sheet);
 
         Row firstRow = sheet.getRow(0);
-        String firstRowData = normalizeFirstRow(firstRow);
-        if (firstRowData != null) {
-            normalizedCoordinates.add(firstRowData);
+        if (firstRow != null) {
+            StringBuilder firstRowData = new StringBuilder();
+            for (int cellNum = 0; cellNum < firstRow.getLastCellNum(); cellNum++) {
+                Cell cell = firstRow.getCell(cellNum);
+                if (cell != null) {
+                    switch (cell.getCellType()) {
+                        case STRING:
+                            firstRowData.append(cell.getStringCellValue());
+                            break;
+                        case NUMERIC:
+                            firstRowData.append(cell.getNumericCellValue());
+                            break;
+
+                    }
+                    if (cellNum < firstRow.getLastCellNum() - 1) {
+                        firstRowData.append("\t");
+                    }
+                }
+            }
+            normalizedCoordinates.add(firstRowData.toString());
         }
 
         for (int i = 1; i <= sheet.getLastRowNum(); i++) {
@@ -80,26 +84,22 @@ public class CoordinateExcelNormalizer {
         return count;
     }
 
-    private String normalizeFirstRow(Row firstRow) {
-        if (firstRow != null) {
-            StringBuilder sb = new StringBuilder();
-            Iterator<Cell> cellIterator = firstRow.cellIterator();
-            while (cellIterator.hasNext()) {
-                Cell cell = cellIterator.next();
-                sb.append(cell.toString());
-                if (cellIterator.hasNext()) {
-                    sb.append("\t");
-                }
-            }
-            return sb.toString();
-        }
-        return null;
-    }
-
     private String normalizeDD(Row row) {
         StringBuilder normalizedCoordinates = new StringBuilder();
-        Pattern dmsPattern = Pattern.compile("(\\d+)°(\\d+)'(\\d+(\\.\\d+)?)\"");
+        Pattern dmsPattern = Pattern.compile("(\\d+)°(\\d+)'(\\d+(\\.\\d+)?)\"?");
         Pattern dmPattern = Pattern.compile("(\\d+)°(\\d+(\\.\\d+)?)'");
+
+        Cell firstCell = row.getCell(0);
+        if (firstCell != null && firstCell.getCellType() == CellType.STRING) {
+            String firstCellValue = firstCell.getStringCellValue();
+            if (firstCellValue.contains("E") || firstCellValue.contains("S")) {
+                Cell secondCell = row.getCell(1);
+                if (secondCell != null) {
+                    row.getCell(0).setCellValue(secondCell.getStringCellValue());
+                    secondCell.setCellValue(firstCellValue);
+                }
+            }
+        }
 
         for (int i = 0; i < row.getLastCellNum(); i++) {
             Cell cell = row.getCell(i);
@@ -114,11 +114,13 @@ public class CoordinateExcelNormalizer {
                         Matcher dmMatcher = dmPattern.matcher(cellValue);
                         if (dmsMatcher.find()) {
                             String matchedLongitude = dmsMatcher.group();
-                            double ddValueLon = Double.parseDouble(NormalizerConverterHelper.convertDMSToDDLon(matchedLongitude));
+                            double ddValueLon = Double.parseDouble(NormalizerConverterHelper
+                                    .convertDMSToDDLon(matchedLongitude));
                             normalizedCoordinates.append(ddValueLon);
                         } else if (dmMatcher.find()) {
                             String matchedLongitude = dmMatcher.group();
-                            double ddValueLon = Double.parseDouble(NormalizerConverterHelper.convertDMToDDLon(matchedLongitude));
+                            double ddValueLon = Double.parseDouble(NormalizerConverterHelper
+                                    .convertDMToDDLon(matchedLongitude));
                             normalizedCoordinates.append(ddValueLon);
                         } else {
                             String decimalNumber = cellValue.replaceAll("[^\\d.]", "");
@@ -201,7 +203,6 @@ public class CoordinateExcelNormalizer {
             if (i < row.getLastCellNum() - 1) {
                 stringBuilder.append("\t");
             }
-
         }
 
         return stringBuilder.toString().trim();

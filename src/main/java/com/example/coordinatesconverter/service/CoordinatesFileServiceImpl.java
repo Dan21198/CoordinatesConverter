@@ -69,11 +69,16 @@ public class CoordinatesFileServiceImpl implements CoordinatesFileService {
 
                 for (int k = 0; k < coordinates.length; k++) {
                     Cell cell = row.createCell(k);
-                    try {
-                        double numericValue = Double.parseDouble(coordinates[k]);
-                        cell.setCellValue(numericValue);
-                    } catch (NumberFormatException e) {
-                        cell.setCellValue(coordinates[k]);
+                    String value = coordinates[k];
+                    if (j == 0) {
+                        cell.setCellValue(value);
+                    } else {
+                        try {
+                            double numericValue = Double.parseDouble(value.trim().replace(',', '.'));
+                            cell.setCellValue(numericValue);
+                        } catch (NumberFormatException e) {
+                            cell.setCellValue(value);
+                        }
                     }
                 }
             }
@@ -87,7 +92,6 @@ public class CoordinatesFileServiceImpl implements CoordinatesFileService {
 
         return outputStream.toByteArray();
     }
-
 
     @Override
     public ResponseEntity<byte[]> processWordFile(MultipartFile file) throws IOException {

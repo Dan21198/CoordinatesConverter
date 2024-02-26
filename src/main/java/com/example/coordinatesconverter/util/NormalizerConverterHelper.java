@@ -159,11 +159,22 @@ public class NormalizerConverterHelper {
 
     private static double extractSeconds(String dmsCoordinate) {
         String[] parts = dmsCoordinate.split("°");
-        String minutesPart = parts[1].substring(0, parts[1].indexOf("'"));
-        String secondsPart = parts[1].substring(parts[1].indexOf("'") + 1, parts[1].indexOf("\""));
+        String secondsPart;
+        if (parts[1].contains("\"")) {
+            secondsPart = parts[1].substring(parts[1].indexOf("'") + 1, parts[1].indexOf("\""));
+        } else {
+            secondsPart = parts[1].substring(parts[1].indexOf("'") + 1);
+        }
         return Double.parseDouble(secondsPart);
     }
 
 
+    public static String convertDDToDMSLon(String matchedLongitude) {
+        double longitude = Double.parseDouble(matchedLongitude);
+        DDCoordinates ddCoordinates = new DDCoordinates(0, longitude);
+        DMSCoordinates dmsCoordinates = coordinateConversionService.convertDDToDMS(ddCoordinates);
+
+        return formatLongitude(dmsCoordinates);
+    }
 }
 
