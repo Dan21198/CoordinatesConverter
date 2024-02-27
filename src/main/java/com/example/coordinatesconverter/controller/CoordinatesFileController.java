@@ -37,8 +37,9 @@ public class CoordinatesFileController {
         return coordinatesFileService.processXmlFile(file);
     }
     @PostMapping("/text")
-    public ResponseEntity<byte[]> processTextFile(@RequestPart MultipartFile file) throws IOException {
-        return coordinatesFileService.processTextFile(file);
+    public ResponseEntity<byte[]> processTextFile(@RequestPart MultipartFile file,
+                                                  @RequestHeader("Conversion-Type") String conversionType) throws IOException {
+        return coordinatesFileService.processTextFile(file, conversionType);
     }
 
 }

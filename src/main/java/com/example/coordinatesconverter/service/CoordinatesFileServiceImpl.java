@@ -31,6 +31,7 @@ public class CoordinatesFileServiceImpl implements CoordinatesFileService {
 
     private final CoordinateNormalizer coordinateNormalizer;
     private final CoordinateExcelNormalizer coordinateExcelNormalizer;
+    private final CoordinatesFileConversionServiceImpl coordinatesFileConversionService;
 
     @Override
     public List<String> processCoordinatesFile(MultipartFile file) throws IOException {
@@ -162,13 +163,16 @@ public class CoordinatesFileServiceImpl implements CoordinatesFileService {
     }
 
     @Override
-    public ResponseEntity<byte[]> processTextFile(MultipartFile file) throws IOException {
+    public ResponseEntity<byte[]> processTextFile(MultipartFile file, String conversionType) throws IOException {
         List<String> processedLines = new ArrayList<>();
         try (BufferedReader reader = new BufferedReader(new InputStreamReader(file.getInputStream(), StandardCharsets.UTF_8))) {
             String line;
             while ((line = reader.readLine()) != null) {
-                String processedLine = coordinateNormalizer.normalizeCoordinatesText(line);
-                processedLines.add(processedLine);
+                if (!line.trim().isEmpty()) {
+                    String processedLine = coordinateNormalizer.normalizeCoordinatesText(line);
+                    String convertedLine = coordinatesFileConversionService.convertCoordinates(conversionType, processedLine);
+                    processedLines.add(convertedLine);
+                }
             }
         }
 

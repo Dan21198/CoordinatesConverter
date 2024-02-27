@@ -16,6 +16,6 @@ public interface CoordinatesFileService {
 
     ResponseEntity<byte[]> processXmlFile(MultipartFile file) throws IOException;
 
-    ResponseEntity<byte[]> processTextFile(MultipartFile file) throws IOException;
+    ResponseEntity<byte[]> processTextFile(MultipartFile file, String conversionType) throws IOException;
 
 }

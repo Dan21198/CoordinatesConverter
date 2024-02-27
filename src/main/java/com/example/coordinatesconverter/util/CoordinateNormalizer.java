@@ -16,6 +16,7 @@ public class CoordinateNormalizer {
         text = normalizeDM(text);
         text = normalizeDMS(text);
         text = normalizeMixedCoordinates(text);
+        text = text.replaceAll("(?<=\\d),(?=\\d)", ".");
         return text;
     }
 
