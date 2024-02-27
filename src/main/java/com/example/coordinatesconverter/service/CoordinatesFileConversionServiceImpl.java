@@ -16,9 +16,6 @@ public class CoordinatesFileConversionServiceImpl {
         if (coordinates.isEmpty()) {
             throw new IllegalArgumentException("Coordinates cannot be empty");
         }
-        if (!coordinates.contains(",")) {
-            throw new IllegalArgumentException("Invalid coordinate format: coordinates must be separated by a comma" + coordinates);
-        }
 
         String[] splitCoordinates = coordinates.split(",");
         String lat = splitCoordinates[0].trim();
@@ -95,24 +92,23 @@ public class CoordinatesFileConversionServiceImpl {
     }
 
     private String formatDDCoordinates(DDCoordinates ddCoordinates) {
-        return ddCoordinates.getLatitude() + "°N," + ddCoordinates.getLongitude() + "°E";
+        return ddCoordinates.getLatitude() + "°N,"
+                + ddCoordinates.getLongitude() + "°E";
     }
 
     private String formatDMCoordinates(DMCoordinates dmCoordinates) {
-        return dmCoordinates.getLatDegrees()
-                + "°" + dmCoordinates.getLatMinutes()
-                + "'N," + dmCoordinates.getLonDegrees()
-                + "°" + dmCoordinates.getLonMinutes()
-                + "'E";
+        return dmCoordinates.getLatDegrees() + "°"
+                + dmCoordinates.getLatMinutes() + "'N,"
+                + dmCoordinates.getLonDegrees() + "°"
+                + dmCoordinates.getLonMinutes() + "'E";
     }
 
     private String formatDMSCoordinates(DMSCoordinates dmsCoordinates) {
-        return dmsCoordinates.getLatDegrees()
-                + "°" + dmsCoordinates.getLatMinutes()
-                + "'" + dmsCoordinates.getLatSeconds()
-                + "\"N," + dmsCoordinates.getLonDegrees()
-                + "°" + dmsCoordinates.getLonMinutes()
-                + "'" + dmsCoordinates.getLonSeconds()
-                + "\"E";
+        return dmsCoordinates.getLatDegrees() + "°"
+                + dmsCoordinates.getLatMinutes() + "'"
+                + dmsCoordinates.getLatSeconds() + "\"N,"
+                + dmsCoordinates.getLonDegrees() + "°"
+                + dmsCoordinates.getLonMinutes() + "'"
+                + dmsCoordinates.getLonSeconds() + "\"E";
     }
 }

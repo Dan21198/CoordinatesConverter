@@ -1,8 +1,6 @@
 package com.example.coordinatesconverter.util;
 
-import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
-
 import java.util.HashMap;
 import java.util.Map;
 import java.util.regex.Matcher;
@@ -240,14 +238,14 @@ public class CoordinateNormalizer {
         text = text.replaceAll("(\\d+\\.\\d+),(\\d+\\.\\d+)", "$1°N,$2°E");
 
         // Handle the case where both latitude and longitude are missing directional indicators
-        text = text.replaceAll("(N)?(\\d+\\.\\d+)°(?:N|S)?, (\\d+\\.\\d+)°(?:E|W)?\n", "$2°$1, $4°$5");
+        text = text.replaceAll("(N)?(\\d+\\.\\d+)°[NS]?, (\\d+\\.\\d+)°[EW]?\n", "$2°$1, $4°$5");
 
         // Replace , symbols with . in decimal number in DMS
         text = text.replaceAll("(\\d+)(°\\d+'\\d+),(\\d+)([NS]?),(\\d+)(°\\d+'\\d+),(\\d+)([EW]?)",
                 "$1$2.$3$4,$5$6.$7$8");
 
         // Add missing , after N and S in DMS
-        text = text.replaceAll("(\\d+°\\d+'\\d+\\.\\d+\")(N|S)(\\d+°\\d+'\\d+\\.\\d+\")(E|W)"
+        text = text.replaceAll("(\\d+°\\d+'\\d+\\.\\d+\")([NS])(\\d+°\\d+'\\d+\\.\\d+\")([EW])"
                 , "$1$2,$3$4");
 
         // Handle case  x°x'x.x°N,x°E°x'x.x°E -> x°x'x.x°N,x°x'x.x°E

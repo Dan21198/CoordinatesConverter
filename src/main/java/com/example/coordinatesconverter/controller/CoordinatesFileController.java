@@ -2,11 +2,9 @@ package com.example.coordinatesconverter.controller;
 
 import com.example.coordinatesconverter.service.CoordinatesFileService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
-
 import java.io.IOException;
 import java.util.List;
 
@@ -38,7 +36,10 @@ public class CoordinatesFileController {
     }
     @PostMapping("/text")
     public ResponseEntity<byte[]> processTextFile(@RequestPart MultipartFile file,
-                                                  @RequestHeader("Conversion-Type") String conversionType) throws IOException {
+                                                  @RequestHeader(value = "Conversion-Type",
+                                                          defaultValue = "")
+                                                  String conversionType)
+            throws IOException {
         return coordinatesFileService.processTextFile(file, conversionType);
     }
 

@@ -1,15 +1,10 @@
 package com.example.coordinatesconverter.util;
 
 import org.springframework.stereotype.Component;
-import org.springframework.web.multipart.MultipartFile;
-
-import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
 import org.apache.poi.ss.usermodel.*;
 
 

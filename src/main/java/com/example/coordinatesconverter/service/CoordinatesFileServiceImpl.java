@@ -20,8 +20,6 @@ import javax.xml.bind.Unmarshaller;
 import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Iterator;
 import java.util.List;
 
 
@@ -170,8 +168,12 @@ public class CoordinatesFileServiceImpl implements CoordinatesFileService {
             while ((line = reader.readLine()) != null) {
                 if (!line.trim().isEmpty()) {
                     String processedLine = coordinateNormalizer.normalizeCoordinatesText(line);
-                    String convertedLine = coordinatesFileConversionService.convertCoordinates(conversionType, processedLine);
-                    processedLines.add(convertedLine);
+                    if (conversionType == null || conversionType.isEmpty()) {
+                        processedLines.add(processedLine);
+                    } else {
+                        String convertedLine = coordinatesFileConversionService.convertCoordinates(conversionType, processedLine);
+                        processedLines.add(convertedLine);
+                    }
                 }
             }
         }
