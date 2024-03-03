@@ -137,29 +137,53 @@ public class CoordinateExcelNormalizer {
 
     private String normalizeDM(Row row) {
         StringBuilder stringBuilder = new StringBuilder();
+        double numericValue;
 
         for (int i = 0; i < row.getLastCellNum(); i++) {
             Cell cell = row.getCell(i);
             if (cell != null) {
                 String cellValue = "";
 
-                if (cell.getCellType() == CellType.NUMERIC) {
-                    double numericValue = cell.getNumericCellValue();
-                    cellValue = Double.toString(numericValue);
-                } else if (cell.getCellType() == CellType.STRING) {
-                    cellValue = cell.getStringCellValue();
-                    try {
-                        double numericValue = Double.parseDouble(cellValue);
-                        cellValue = Double.toString(numericValue);
-                    } catch (NumberFormatException e) {
-                        cellValue = cellValue.replaceAll("[^\\d.]", "");
-                    }
+                switch (cell.getCellType()) {
+                    case NUMERIC:
+                        numericValue = cell.getNumericCellValue();
+                        if (i == 0 || i == 2) {
+                            cellValue = String.format("%d", (int) numericValue);
+                        } else if (i == 1 || i == 3) {
+                            cellValue = String.format("%.5f", numericValue);
+                        }
+                        break;
+                    case STRING:
+                        String stringValue = cell.getStringCellValue().replace(',', '.');
+                        try {
+                            numericValue = Double.parseDouble(stringValue);
+                            if (i == 0 || i == 2) {
+                                cellValue = String.format("%d", (int) numericValue);
+                            } else if (i == 1 || i == 3) {
+                                cellValue = String.format("%.5f", numericValue);
+                            }
+                        } catch (NumberFormatException e) {
+                            cellValue = stringValue.replaceAll("(\\d+[.,]\\d+).*", "$1")
+                                    .replaceAll("[^\\d.,]+", "");
+                            try {
+                                if (i == 0 || i == 2) {
+                                    cellValue = String.format("%d", (int) Double.parseDouble(cellValue));
+                                } else if (i == 1 || i == 3) {
+                                    cellValue = String.format("%.5f", Double.parseDouble(cellValue));
+                                }
+                            } catch (NumberFormatException ex) {
+                                cellValue = stringValue;
+                            }
+                        }
+                        break;
+                    default:
+                        break;
                 }
 
                 stringBuilder.append(cellValue);
-            }
-            if (i < row.getLastCellNum() - 1) {
-                stringBuilder.append("\t");
+                if (i < row.getLastCellNum() - 1) {
+                    stringBuilder.append("\t");
+                }
             }
         }
 

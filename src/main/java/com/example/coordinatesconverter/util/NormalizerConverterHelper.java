@@ -126,15 +126,6 @@ public class NormalizerConverterHelper {
         return String.valueOf(ddCoordinates.getLongitude());
     }
 
-    public static String convertDMToDDLat(String matchedLatitude) {
-        double latitudeDegrees = extractDegrees(matchedLatitude);
-        double latitudeMinutes = extractMinutes(matchedLatitude);
-        DMCoordinates dmCoordinates = new DMCoordinates(latitudeDegrees, latitudeMinutes, 0, 0);
-        DDCoordinates ddCoordinates = coordinateConversionService.convertDMToDD(dmCoordinates);
-
-        return String.valueOf(ddCoordinates.getLatitude());
-    }
-
     public static String convertDMSToDDLon(String matchedLongitude) {
         double longitudeDegrees = extractDegrees(matchedLongitude);
         double longitudeMinutes = extractMinutes(matchedLongitude);
@@ -146,17 +137,6 @@ public class NormalizerConverterHelper {
         return String.valueOf(ddCoordinates.getLongitude());
     }
 
-    public static String convertDMSToDDLat(String matchedLatitude) {
-        double latitudeDegrees = extractDegrees(matchedLatitude);
-        double latitudeMinutes = extractMinutes(matchedLatitude);
-        double latitudeSeconds = extractSeconds(matchedLatitude);
-        DMSCoordinates dmsCoordinates = new DMSCoordinates(latitudeDegrees, latitudeMinutes, latitudeSeconds
-                , 0, 0, 0);
-        DDCoordinates ddCoordinates = coordinateConversionService.convertDMSToDD(dmsCoordinates);
-
-        return String.valueOf(ddCoordinates.getLatitude());
-    }
-
     private static double extractSeconds(String dmsCoordinate) {
         String[] parts = dmsCoordinate.split("°");
         String secondsPart;
@@ -166,15 +146,6 @@ public class NormalizerConverterHelper {
             secondsPart = parts[1].substring(parts[1].indexOf("'") + 1);
         }
         return Double.parseDouble(secondsPart);
-    }
-
-
-    public static String convertDDToDMSLon(String matchedLongitude) {
-        double longitude = Double.parseDouble(matchedLongitude);
-        DDCoordinates ddCoordinates = new DDCoordinates(0, longitude);
-        DMSCoordinates dmsCoordinates = coordinateConversionService.convertDDToDMS(ddCoordinates);
-
-        return formatLongitude(dmsCoordinates);
     }
 
     public static String convertExcelDDToDMS(String cellValue) {
