@@ -219,7 +219,12 @@ public class CoordinateExcelNormalizer {
                         break;
                 }
 
-                cellValues.add(cellValue);
+                String[] parts = cellValue.split("[°'\"]");
+                for (String part : parts) {
+                    if (!part.isEmpty()) {
+                        cellValues.add(part.trim());
+                    }
+                }
             }
         }
 
