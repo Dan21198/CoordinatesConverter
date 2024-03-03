@@ -176,5 +176,22 @@ public class NormalizerConverterHelper {
 
         return formatLongitude(dmsCoordinates);
     }
+
+    public static String convertExcelDDToDMS(String cellValue) {
+        double ddValue = Double.parseDouble(cellValue);
+        DDCoordinates ddCoordinates = new DDCoordinates(ddValue, ddValue);
+        DMSCoordinates dmsCoordinates = coordinateConversionService.convertDDToDMS(ddCoordinates);
+
+        return formatLongitudeDMS(dmsCoordinates);
+    }
+
+    public static String convertExcelDMToDMS(String cellValue, String nextCellValue) {
+        double dmValue = Double.parseDouble(cellValue);
+        double nextDmValue = Double.parseDouble(nextCellValue);
+        DMCoordinates dmCoordinates = new DMCoordinates(dmValue, nextDmValue, dmValue, nextDmValue);
+        DMSCoordinates dmsCoordinates = coordinateConversionService.convertDMToDMS(dmCoordinates);
+
+        return formatLongitudeDMS(dmsCoordinates);
+    }
 }
 

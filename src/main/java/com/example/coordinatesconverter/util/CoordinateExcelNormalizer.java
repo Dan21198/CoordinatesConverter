@@ -135,8 +135,6 @@ public class CoordinateExcelNormalizer {
         return normalizedCoordinates.toString();
     }
 
-
-
     private String normalizeDM(Row row) {
         StringBuilder stringBuilder = new StringBuilder();
 
@@ -169,39 +167,63 @@ public class CoordinateExcelNormalizer {
     }
 
     private String normalizeDMS(Row row) {
-        StringBuilder stringBuilder = new StringBuilder();
+        List<String> cellValues = new ArrayList<>();
 
         for (int i = 0; i < row.getLastCellNum(); i++) {
             Cell cell = row.getCell(i);
             if (cell != null) {
                 String cellValue = "";
-                if (cell.getCellType() == CellType.NUMERIC) {
-                    double numericValue = cell.getNumericCellValue();
-                    if (i == 2 || i == 5) {
-                        cellValue = String.format("%.5f", numericValue);
-                    } else {
-                        cellValue = Integer.toString((int) numericValue);
-                    }
-                } else if (cell.getCellType() == CellType.STRING) {
-                    cellValue = cell.getStringCellValue();
-                    if (i == 2 || i == 5) {
-                        cellValue = cellValue.replaceAll("(\\d+[,.]\\d+)\\W\\w", "$1");
-                        cellValue = cellValue.replaceAll("(\\d+[,.]\\d+)[A-Z^\\W\\s]", "$1");
-                    } else {
-                        cellValue = cellValue.replaceAll("(\\d+)[,.]\\d+", "$1");
-                        cellValue = cellValue.replaceAll("[^\\d]", "");
-                    }
+                switch (cell.getCellType()) {
+                    case NUMERIC:
+                        double numericValue = cell.getNumericCellValue();
+                        if (i == 2 || i == 5) {
+                            cellValue = String.format("%.5f", numericValue);
+                        } else if ((i == 0 || i == 3) && row.getCell(i + 1) == null) {
+                            cellValue = Double.toString(numericValue);
+                            cellValue = cellValue.replaceAll("(\\d+[,.]\\d+).*", "$1");
+                            cellValue = NormalizerConverterHelper.convertExcelDDToDMS(cellValue);
+                        } else if ((i == 0 || i == 3) && row.getCell(i + 1) != null && row.getCell(i + 2) == null) {
+                            Cell nextCell = row.getCell(i + 1);
+                            if (nextCell != null && nextCell.getCellType() == CellType.NUMERIC) {
+                                double nextNumericValue = nextCell.getNumericCellValue();
+                                cellValue = NormalizerConverterHelper.convertExcelDMToDMS(Double.toString(numericValue), Double.toString(nextNumericValue));
+                                i++;
+                            }
+                        } else {
+                            cellValue = Integer.toString((int) numericValue);
+                        }
+                        break;
+                    case STRING:
+                        cellValue = cell.getStringCellValue();
+                        if (i == 2 || i == 5) {
+                            cellValue = cellValue.replaceAll("(\\d+[,.]\\d+)\\W\\w", "$1");
+                            cellValue = cellValue.replaceAll("(\\d+[,.]\\d+)[A-Z^\\W\\s]", "$1");
+                        } else if ((i == 0 || i == 3) && row.getCell(i + 1) == null) {
+                            cellValue = cellValue.replaceAll("(\\d+[,.]\\d+).*", "$1");
+                            cellValue = NormalizerConverterHelper.convertExcelDDToDMS(cellValue);
+                        } else if ((i == 0 || i == 3) && row.getCell(i + 1) != null && row.getCell(i + 2) == null) {
+                            cellValue = cellValue.replaceAll("(\\d+).*", "$1");
+                            Cell nextCell = row.getCell(i + 1);
+                            if (nextCell != null && nextCell.getCellType() == CellType.STRING) {
+                                String nextCellValue = nextCell.getStringCellValue();
+                                nextCellValue = nextCellValue.replaceAll("(\\d+[,.]\\d+).*", "$1");
+                                cellValue = NormalizerConverterHelper.convertExcelDMToDMS(cellValue, nextCellValue);
+                                i++;
+                            }
+                        } else {
+                            cellValue = cellValue.replaceAll("(\\d+)[,.]\\d+", "$1");
+                            cellValue = cellValue.replaceAll("[^\\d]", "");
+                        }
+                        break;
+                    default:
+                        break;
                 }
 
-                stringBuilder.append(cellValue);
-            }
-            if (i < row.getLastCellNum() - 1) {
-                stringBuilder.append("\t");
+                cellValues.add(cellValue);
             }
         }
 
-        return stringBuilder.toString().trim();
+        return String.join("\t", cellValues).trim();
     }
-
 
 }
