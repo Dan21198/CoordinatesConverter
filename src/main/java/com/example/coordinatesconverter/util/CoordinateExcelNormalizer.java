@@ -1,10 +1,13 @@
 package com.example.coordinatesconverter.util;
 
 import org.springframework.stereotype.Component;
+
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
 import org.apache.poi.ss.usermodel.*;
 
 
@@ -136,58 +139,77 @@ public class CoordinateExcelNormalizer {
     }
 
     private String normalizeDM(Row row) {
-        StringBuilder stringBuilder = new StringBuilder();
-        double numericValue;
+        List<String> cellValues = new ArrayList<>();
 
         for (int i = 0; i < row.getLastCellNum(); i++) {
             Cell cell = row.getCell(i);
             if (cell != null) {
                 String cellValue = "";
 
-                switch (cell.getCellType()) {
-                    case NUMERIC:
-                        numericValue = cell.getNumericCellValue();
-                        if (i == 0 || i == 2) {
-                            cellValue = String.format("%d", (int) numericValue);
-                        } else if (i == 1 || i == 3) {
-                            cellValue = String.format("%.5f", numericValue);
-                        }
-                        break;
-                    case STRING:
-                        String stringValue = cell.getStringCellValue().replace(',', '.');
-                        try {
-                            numericValue = Double.parseDouble(stringValue);
+                if ((i == 0 || i == 2) && row.getCell(i + 1) == null) {
+                    if (cell.getCellType() == CellType.NUMERIC) {
+                        cellValue = NormalizerConverterHelper.convertExcelDDoDM(String.valueOf(cell.getNumericCellValue()));
+                        convertDDToDM(cellValues, cellValue);
+                    } else {
+                        double numericValue = Double.parseDouble(cell.getStringCellValue().replaceAll("(\\d+[.,]\\d+).*", "$1").replaceAll("[^\\d.,]+", ""));
+                        cellValue = NormalizerConverterHelper.convertExcelDDoDM(String.valueOf(numericValue));
+                        convertDDToDM(cellValues, cellValue);
+                    }
+                } else {
+
+                    switch (cell.getCellType()) {
+                        case NUMERIC:
+                            double numericValue = cell.getNumericCellValue();
                             if (i == 0 || i == 2) {
                                 cellValue = String.format("%d", (int) numericValue);
                             } else if (i == 1 || i == 3) {
                                 cellValue = String.format("%.5f", numericValue);
                             }
-                        } catch (NumberFormatException e) {
-                            cellValue = stringValue.replaceAll("(\\d+[.,]\\d+).*", "$1")
-                                    .replaceAll("[^\\d.,]+", "");
+                            break;
+                        case STRING:
+                            String stringValue = cell.getStringCellValue().replace(',', '.');
                             try {
+                                numericValue = Double.parseDouble(stringValue);
                                 if (i == 0 || i == 2) {
-                                    cellValue = String.format("%d", (int) Double.parseDouble(cellValue));
+                                    cellValue = String.format("%d", (int) numericValue);
                                 } else if (i == 1 || i == 3) {
-                                    cellValue = String.format("%.5f", Double.parseDouble(cellValue));
+                                    cellValue = String.format("%.5f", numericValue);
                                 }
-                            } catch (NumberFormatException ex) {
-                                cellValue = stringValue;
+                            } catch (NumberFormatException e) {
+                                cellValue = stringValue.replaceAll("(\\d+[.,]\\d+).*", "$1").replaceAll("[^\\d.,]+", "");
+                                try {
+                                    if (i == 0 || i == 2) {
+                                        cellValue = String.format("%d", (int) Double.parseDouble(cellValue));
+                                    } else if (i == 1 || i == 3) {
+                                        cellValue = String.format("%.5f", Double.parseDouble(cellValue));
+                                    }
+                                } catch (NumberFormatException ex) {
+                                    cellValue = stringValue;
+                                }
                             }
-                        }
-                        break;
-                    default:
-                        break;
-                }
-
-                stringBuilder.append(cellValue);
-                if (i < row.getLastCellNum() - 1) {
-                    stringBuilder.append("\t");
+                            break;
+                        default:
+                            break;
+                    }
+                    cellValues.add(cellValue);
                 }
             }
         }
+        return String.join("\t", cellValues).trim();
+    }
 
-        return stringBuilder.toString().trim();
+    private void convertDDToDM(List<String> cellValues, String cellValue) {
+        if (cellValue.contains("°")) {
+            String[] parts = cellValue.split("°");
+            cellValues.add(parts[0].trim());
+
+            if (parts.length > 1) {
+                String minutePart = parts[1].replaceAll("[^\\d,]+", "").trim();
+                cellValues.add(minutePart);
+            }
+        } else {
+            cellValues.add(cellValue);
+        }
     }
 
     private String normalizeDMS(Row row) {

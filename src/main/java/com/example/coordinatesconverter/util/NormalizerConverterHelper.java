@@ -164,5 +164,14 @@ public class NormalizerConverterHelper {
 
         return formatLongitudeDMS(dmsCoordinates);
     }
+
+    public static String convertExcelDDoDM(String cellValue) {
+        double ddValue = Double.parseDouble(cellValue);
+        DDCoordinates ddCoordinates = new DDCoordinates(ddValue, ddValue);
+        DMCoordinates dmCoordinates = coordinateConversionService.convertDDToDM(ddCoordinates);
+
+        return formatLongitudeDM(dmCoordinates);
+    }
+
 }
 
