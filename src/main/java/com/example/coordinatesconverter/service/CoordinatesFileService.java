@@ -12,7 +12,7 @@ public interface CoordinatesFileService {
 
     ResponseEntity<byte[]> processExcelFile(MultipartFile file) throws IOException;
 
-    ResponseEntity<byte[]> processWordFile(MultipartFile file) throws IOException;
+    ResponseEntity<byte[]> processWordFile(MultipartFile file, String conversionType) throws IOException;
 
     ResponseEntity<byte[]> processXmlFile(MultipartFile file) throws IOException;
 

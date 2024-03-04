@@ -6,6 +6,8 @@ import com.example.coordinatesconverter.model.DMSCoordinates;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.util.Arrays;
+
 @Service
 @RequiredArgsConstructor
 public class CoordinatesFileConversionServiceImpl {
@@ -17,7 +19,7 @@ public class CoordinatesFileConversionServiceImpl {
             throw new IllegalArgumentException("Coordinates cannot be empty");
         }
 
-        String[] splitCoordinates = coordinates.split(",");
+        String[] splitCoordinates = coordinates.replaceAll("[NSWE]", "").split(",");
         String lat = splitCoordinates[0].trim();
         String lon = splitCoordinates[1].trim();
 
@@ -92,23 +94,21 @@ public class CoordinatesFileConversionServiceImpl {
     }
 
     private String formatDDCoordinates(DDCoordinates ddCoordinates) {
-        return ddCoordinates.getLatitude() + "°N,"
-                + ddCoordinates.getLongitude() + "°E";
+        return String.format("%.5f°N,", ddCoordinates.getLatitude())
+                + String.format("%.5f°E", ddCoordinates.getLongitude());
     }
 
     private String formatDMCoordinates(DMCoordinates dmCoordinates) {
-        return dmCoordinates.getLatDegrees() + "°"
-                + dmCoordinates.getLatMinutes() + "'N,"
-                + dmCoordinates.getLonDegrees() + "°"
-                + dmCoordinates.getLonMinutes() + "'E";
+        return String.format("%d°", (int) dmCoordinates.getLatDegrees())
+                + String.format("%.5f'N,", dmCoordinates.getLatMinutes())
+                + String.format("%d°", (int) dmCoordinates.getLonDegrees())
+                + String.format("%.5f'E", dmCoordinates.getLonMinutes());
     }
 
     private String formatDMSCoordinates(DMSCoordinates dmsCoordinates) {
-        return dmsCoordinates.getLatDegrees() + "°"
-                + dmsCoordinates.getLatMinutes() + "'"
-                + dmsCoordinates.getLatSeconds() + "\"N,"
-                + dmsCoordinates.getLonDegrees() + "°"
-                + dmsCoordinates.getLonMinutes() + "'"
-                + dmsCoordinates.getLonSeconds() + "\"E";
+        return String.format("%d°", (int) dmsCoordinates.getLatDegrees())
+                + String.format("%d'%.5f\"N,", (int) dmsCoordinates.getLatMinutes(), dmsCoordinates.getLatSeconds())
+                + String.format("%d°", (int) dmsCoordinates.getLonDegrees())
+                + String.format("%d'%.5f\"E", (int) dmsCoordinates.getLonMinutes(), dmsCoordinates.getLonSeconds());
     }
 }

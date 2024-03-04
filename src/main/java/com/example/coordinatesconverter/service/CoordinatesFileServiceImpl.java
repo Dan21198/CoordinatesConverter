@@ -93,13 +93,16 @@ public class CoordinatesFileServiceImpl implements CoordinatesFileService {
     }
 
     @Override
-    public ResponseEntity<byte[]> processWordFile(MultipartFile file) throws IOException {
+    public ResponseEntity<byte[]> processWordFile(MultipartFile file, String conversionType) throws IOException {
         try (XWPFDocument document = new XWPFDocument(file.getInputStream())) {
             List<XWPFParagraph> paragraphs = document.getParagraphs();
             List<String> standardizedCoordinates = new ArrayList<>();
             for (XWPFParagraph paragraph : paragraphs) {
                 String text = paragraph.getText();
                 String standardizedText = coordinateNormalizer.normalizeCoordinatesText(text);
+                if (conversionType != null && !conversionType.isEmpty() && !standardizedText.isEmpty()) {
+                    standardizedText = coordinatesFileConversionService.convertCoordinates(conversionType, standardizedText);
+                }
                 standardizedCoordinates.add(standardizedText);
             }
 

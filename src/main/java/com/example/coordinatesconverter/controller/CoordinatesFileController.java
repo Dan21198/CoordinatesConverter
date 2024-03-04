@@ -26,8 +26,12 @@ public class CoordinatesFileController {
     }
 
     @PostMapping("/word")
-    public ResponseEntity<byte[]> processWordFile(@RequestPart MultipartFile file) throws IOException {
-        return coordinatesFileService.processWordFile(file);
+    public ResponseEntity<byte[]> processWordFile(@RequestPart MultipartFile file,
+                                                  @RequestHeader(value = "Conversion-Type",
+                                                          defaultValue = "")
+                                                  String conversionType)
+            throws IOException {
+        return coordinatesFileService.processWordFile(file, conversionType);
     }
 
     @PostMapping("/xml")
