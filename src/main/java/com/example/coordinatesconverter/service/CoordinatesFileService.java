@@ -10,7 +10,7 @@ public interface CoordinatesFileService {
 
     List<String> processCoordinatesFile(MultipartFile file) throws IOException;
 
-    ResponseEntity<byte[]> processExcelFile(MultipartFile file) throws IOException;
+    ResponseEntity<byte[]> processExcelFile(MultipartFile file, String conversionType) throws IOException;
 
     ResponseEntity<byte[]> processWordFile(MultipartFile file, String conversionType) throws IOException;
 

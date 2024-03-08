@@ -21,8 +21,12 @@ public class CoordinatesFileController {
     }
 
     @PostMapping("/excel")
-    public ResponseEntity<byte[]> processExcelFile(@RequestPart MultipartFile file) throws IOException {
-        return coordinatesFileService.processExcelFile(file);
+    public ResponseEntity<byte[]> processExcelFile(@RequestPart MultipartFile file,
+                                                   @RequestHeader(value = "Conversion-Type"
+                                                           , defaultValue = "")
+                                                   String conversionType)
+            throws IOException {
+        return coordinatesFileService.processExcelFile(file, conversionType);
     }
 
     @PostMapping("/word")

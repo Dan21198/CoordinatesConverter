@@ -10,7 +10,7 @@ import java.util.Arrays;
 
 @Service
 @RequiredArgsConstructor
-public class CoordinatesFileConversionServiceImpl {
+public class CoordinatesFileConversionServiceImpl implements CoordinatesFileConversionService {
 
     private final CoordinateConversionServiceImpl coordinateConversionService;
 
@@ -75,6 +75,10 @@ public class CoordinatesFileConversionServiceImpl {
                 break;
         }
         return coordinates;
+    }
+    @Override
+    public String convertExcelCoordinates(String conversionType, String coordinates) {
+        return null;
     }
 
     private double extractDegrees(String coordinate) {

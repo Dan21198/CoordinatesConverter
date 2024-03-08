@@ -29,7 +29,8 @@ public class CoordinatesFileServiceImpl implements CoordinatesFileService {
 
     private final CoordinateNormalizer coordinateNormalizer;
     private final CoordinateExcelNormalizer coordinateExcelNormalizer;
-    private final CoordinatesFileConversionServiceImpl coordinatesFileConversionService;
+    private final CoordinatesFileConversionService coordinatesFileConversionService;
+    private final CoordinatesExcelConversionService coordinatesExcelConversionService;
 
     @Override
     public List<String> processCoordinatesFile(MultipartFile file) throws IOException {
@@ -41,8 +42,8 @@ public class CoordinatesFileServiceImpl implements CoordinatesFileService {
     }
 
     @Override
-    public ResponseEntity<byte[]> processExcelFile(MultipartFile file) throws IOException {
-        byte[] fileContent = createProcessedExcelFile(file);
+    public ResponseEntity<byte[]> processExcelFile(MultipartFile file, String conversionType) throws IOException {
+        byte[] fileContent = createProcessedExcelFile(file, conversionType);
 
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_OCTET_STREAM);
@@ -52,14 +53,16 @@ public class CoordinatesFileServiceImpl implements CoordinatesFileService {
         return new ResponseEntity<>(fileContent, headers, HttpStatus.OK);
     }
 
-    private byte[] createProcessedExcelFile(MultipartFile file) throws IOException {
+    private byte[] createProcessedExcelFile(MultipartFile file, String conversionType) throws IOException {
         Workbook originalWorkbook = WorkbookFactory.create(file.getInputStream());
         Workbook processedWorkbook = new XSSFWorkbook();
 
         for (int i = 0; i < originalWorkbook.getNumberOfSheets(); i++) {
             Sheet originalSheet = originalWorkbook.getSheetAt(i);
             List<String> standardizedCoordinates = coordinateExcelNormalizer.normalizeSheet(originalSheet);
-
+            if (conversionType != null && !conversionType.isEmpty()) {
+                standardizedCoordinates = coordinatesExcelConversionService.convertCoordinates(conversionType, standardizedCoordinates);
+            }
             Sheet processedSheet = processedWorkbook.createSheet(originalSheet.getSheetName());
 
             for (int j = 0; j < standardizedCoordinates.size(); j++) {

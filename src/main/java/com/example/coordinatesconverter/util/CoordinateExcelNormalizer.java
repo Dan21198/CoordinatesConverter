@@ -3,11 +3,9 @@ package com.example.coordinatesconverter.util;
 import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
 import org.apache.poi.ss.usermodel.*;
 
 
@@ -148,10 +146,13 @@ public class CoordinateExcelNormalizer {
 
                 if ((i == 0 || i == 2) && row.getCell(i + 1) == null) {
                     if (cell.getCellType() == CellType.NUMERIC) {
-                        cellValue = NormalizerConverterHelper.convertExcelDDoDM(String.valueOf(cell.getNumericCellValue()));
+                        cellValue = NormalizerConverterHelper
+                                .convertExcelDDoDM(String.valueOf(cell.getNumericCellValue()));
                         convertDDToDM(cellValues, cellValue);
                     } else {
-                        double numericValue = Double.parseDouble(cell.getStringCellValue().replaceAll("(\\d+[.,]\\d+).*", "$1").replaceAll("[^\\d.,]+", ""));
+                        double numericValue = Double.parseDouble(cell.getStringCellValue()
+                                .replaceAll("(\\d+[.,]\\d+).*", "$1")
+                                .replaceAll("[^\\d.,]+", ""));
                         cellValue = NormalizerConverterHelper.convertExcelDDoDM(String.valueOf(numericValue));
                         convertDDToDM(cellValues, cellValue);
                     }
@@ -176,7 +177,8 @@ public class CoordinateExcelNormalizer {
                                     cellValue = String.format("%.5f", numericValue);
                                 }
                             } catch (NumberFormatException e) {
-                                cellValue = stringValue.replaceAll("(\\d+[.,]\\d+).*", "$1").replaceAll("[^\\d.,]+", "");
+                                cellValue = stringValue.replaceAll("(\\d+[.,]\\d+).*", "$1")
+                                        .replaceAll("[^\\d.,]+", "");
                                 try {
                                     if (i == 0 || i == 2) {
                                         cellValue = String.format("%d", (int) Double.parseDouble(cellValue));
@@ -228,11 +230,13 @@ public class CoordinateExcelNormalizer {
                             cellValue = Double.toString(numericValue);
                             cellValue = cellValue.replaceAll("(\\d+[,.]\\d+).*", "$1");
                             cellValue = NormalizerConverterHelper.convertExcelDDToDMS(cellValue);
-                        } else if ((i == 0 || i == 3) && row.getCell(i + 1) != null && row.getCell(i + 2) == null) {
+                        } else if ((i == 0 || i == 3) && row.getCell(i + 1) != null
+                                && row.getCell(i + 2) == null) {
                             Cell nextCell = row.getCell(i + 1);
                             if (nextCell != null && nextCell.getCellType() == CellType.NUMERIC) {
                                 double nextNumericValue = nextCell.getNumericCellValue();
-                                cellValue = NormalizerConverterHelper.convertExcelDMToDMS(Double.toString(numericValue), Double.toString(nextNumericValue));
+                                cellValue = NormalizerConverterHelper.convertExcelDMToDMS(Double.toString(numericValue)
+                                        , Double.toString(nextNumericValue));
                                 i++;
                             }
                         } else {
@@ -247,7 +251,8 @@ public class CoordinateExcelNormalizer {
                         } else if ((i == 0 || i == 3) && row.getCell(i + 1) == null) {
                             cellValue = cellValue.replaceAll("(\\d+[,.]\\d+).*", "$1");
                             cellValue = NormalizerConverterHelper.convertExcelDDToDMS(cellValue);
-                        } else if ((i == 0 || i == 3) && row.getCell(i + 1) != null && row.getCell(i + 2) == null) {
+                        } else if ((i == 0 || i == 3) && row.getCell(i + 1) != null
+                                && row.getCell(i + 2) == null) {
                             cellValue = cellValue.replaceAll("(\\d+).*", "$1");
                             Cell nextCell = row.getCell(i + 1);
                             if (nextCell != null && nextCell.getCellType() == CellType.STRING) {
