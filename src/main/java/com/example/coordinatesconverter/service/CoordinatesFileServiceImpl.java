@@ -1,8 +1,9 @@
 package com.example.coordinatesconverter.service;
 
-import com.example.coordinatesconverter.model.CoordinatesXML;
 import com.example.coordinatesconverter.util.CoordinateExcelNormalizer;
 import com.example.coordinatesconverter.util.CoordinateNormalizer;
+import com.opencsv.*;
+import com.opencsv.exceptions.CsvValidationException;
 import lombok.RequiredArgsConstructor;
 import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
@@ -14,12 +15,10 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
-import javax.xml.bind.JAXBContext;
-import javax.xml.bind.JAXBException;
-import javax.xml.bind.Unmarshaller;
 import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 
@@ -31,15 +30,6 @@ public class CoordinatesFileServiceImpl implements CoordinatesFileService {
     private final CoordinateExcelNormalizer coordinateExcelNormalizer;
     private final CoordinatesFileConversionService coordinatesFileConversionService;
     private final CoordinatesExcelConversionService coordinatesExcelConversionService;
-
-    @Override
-    public List<String> processCoordinatesFile(MultipartFile file) throws IOException {
-        List<String> standardizedCoordinates = new ArrayList<>();
-        try (BufferedReader reader = new BufferedReader(new InputStreamReader(file.getInputStream()))) {
-            reader.lines().map(coordinateNormalizer::normalizeCoordinatesText).forEach(standardizedCoordinates::add);
-        }
-        return standardizedCoordinates;
-    }
 
     @Override
     public ResponseEntity<byte[]> processExcelFile(MultipartFile file, String conversionType) throws IOException {
@@ -61,7 +51,8 @@ public class CoordinatesFileServiceImpl implements CoordinatesFileService {
             Sheet originalSheet = originalWorkbook.getSheetAt(i);
             List<String> standardizedCoordinates = coordinateExcelNormalizer.normalizeSheet(originalSheet);
             if (conversionType != null && !conversionType.isEmpty()) {
-                standardizedCoordinates = coordinatesExcelConversionService.convertCoordinates(conversionType, standardizedCoordinates);
+                standardizedCoordinates = coordinatesExcelConversionService.convertCoordinates(conversionType
+                        , standardizedCoordinates);
             }
             Sheet processedSheet = processedWorkbook.createSheet(originalSheet.getSheetName());
 
@@ -125,47 +116,6 @@ public class CoordinatesFileServiceImpl implements CoordinatesFileService {
             return new ResponseEntity<>(documentBytes, headers, HttpStatus.OK);
         }
     }
-
-    @Override
-    public ResponseEntity<byte[]> processXmlFile(MultipartFile file) throws IOException {
-
-        List<String> standardizedCoordinates = processXmlContent(file);
-        String processedXmlContent = generateXmlContent(standardizedCoordinates);
-        byte[] fileContent = processedXmlContent.getBytes();
-
-        HttpHeaders headers = new HttpHeaders();
-        headers.setContentType(MediaType.APPLICATION_XML);
-        headers.setContentDispositionFormData("filename", "processed_xml_file.xml");
-        headers.setContentLength(fileContent.length);
-
-        return new ResponseEntity<>(fileContent, headers, HttpStatus.OK);
-    }
-
-    private List<String> processXmlContent(MultipartFile file) throws IOException {
-        List<String> standardizedCoordinates = new ArrayList<>();
-        try (InputStream inputStream = file.getInputStream()) {
-            JAXBContext jaxbContext = JAXBContext.newInstance(CoordinatesXML.class);
-            Unmarshaller unmarshaller = jaxbContext.createUnmarshaller();
-            CoordinatesXML coordinatesXML = (CoordinatesXML) unmarshaller.unmarshal(inputStream);
-            standardizedCoordinates.add(coordinateNormalizer.normalizeCoordinatesText(coordinatesXML.getLatitude()));
-            standardizedCoordinates.add(coordinateNormalizer.normalizeCoordinatesText(coordinatesXML.getLongitude()));
-        } catch (JAXBException e) {
-            e.printStackTrace();
-        }
-        return standardizedCoordinates;
-    }
-
-    private String generateXmlContent(List<String> standardizedCoordinates) {
-        StringBuilder xmlBuilder = new StringBuilder();
-        xmlBuilder.append("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n");
-        xmlBuilder.append("<coordinates>\n");
-        for (String coordinate : standardizedCoordinates) {
-            xmlBuilder.append("<coordinate>").append(coordinate).append("</coordinate>\n");
-        }
-        xmlBuilder.append("</coordinates>");
-        return xmlBuilder.toString();
-    }
-
     @Override
     public ResponseEntity<byte[]> processTextFile(MultipartFile file, String conversionType) throws IOException {
         List<String> processedLines = new ArrayList<>();
@@ -195,6 +145,65 @@ public class CoordinatesFileServiceImpl implements CoordinatesFileService {
         return new ResponseEntity<>(processedContent, headers, HttpStatus.OK);
     }
 
+    @Override
+    public ResponseEntity<byte[]> processCsvFile(MultipartFile file, String conversionType) throws IOException {
+        Workbook workbook = new XSSFWorkbook();
+        Sheet sheet = workbook.createSheet("Sheet");
 
+        CSVParser parser = new CSVParserBuilder()
+                .withSeparator(';')
+                .build();
+
+        CSVReader csvReader = new CSVReaderBuilder(new InputStreamReader(file.getInputStream(), StandardCharsets.ISO_8859_1))
+                .withCSVParser(parser)
+                .build();
+
+        String[] nextLine;
+        int rowNum = 0;
+        while (true) {
+            try {
+                if ((nextLine = csvReader.readNext()) == null) break;
+            } catch (CsvValidationException e) {
+                throw new RuntimeException(e);
+            }
+            Row row = sheet.createRow(rowNum++);
+            int colNum = 0;
+            for (String field : nextLine) {
+                Cell cell = row.createCell(colNum++);
+                field = field.replace(',', '.');
+                cell.setCellValue(field);
+            }
+        }
+
+        List<String> standardizedCoordinates = coordinateExcelNormalizer.normalizeSheet(sheet);
+        if (conversionType != null && !conversionType.isEmpty()) {
+            standardizedCoordinates = coordinatesExcelConversionService.convertCoordinates(conversionType
+                    , standardizedCoordinates);
+        }
+        ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+
+        CSVWriter csvWriter = new CSVWriter(
+                new OutputStreamWriter(outputStream, StandardCharsets.ISO_8859_1),
+                ';',
+                CSVWriter.NO_QUOTE_CHARACTER,
+                CSVWriter.DEFAULT_ESCAPE_CHARACTER,
+                CSVWriter.DEFAULT_LINE_END
+        );
+        System.out.println(standardizedCoordinates);
+        for (String coordinates : standardizedCoordinates) {
+            String[] coordinatePair = coordinates.trim().split("\t");
+            csvWriter.writeNext(coordinatePair);
+        }
+        csvWriter.close();
+
+        byte[] fileContent = outputStream.toByteArray();
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_OCTET_STREAM);
+        headers.setContentDispositionFormData("filename", "processed_csv_file.csv");
+        headers.setContentLength(fileContent.length);
+
+        return new ResponseEntity<>(fileContent, headers, HttpStatus.OK);
+    }
 
 }

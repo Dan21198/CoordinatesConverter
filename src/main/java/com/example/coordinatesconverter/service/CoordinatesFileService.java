@@ -8,14 +8,12 @@ import java.util.List;
 
 public interface CoordinatesFileService {
 
-    List<String> processCoordinatesFile(MultipartFile file) throws IOException;
-
     ResponseEntity<byte[]> processExcelFile(MultipartFile file, String conversionType) throws IOException;
 
     ResponseEntity<byte[]> processWordFile(MultipartFile file, String conversionType) throws IOException;
 
-    ResponseEntity<byte[]> processXmlFile(MultipartFile file) throws IOException;
-
     ResponseEntity<byte[]> processTextFile(MultipartFile file, String conversionType) throws IOException;
+
+    ResponseEntity<byte[]> processCsvFile(MultipartFile file, String conversionType) throws IOException;
 
 }

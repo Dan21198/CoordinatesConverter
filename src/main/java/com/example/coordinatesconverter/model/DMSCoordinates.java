@@ -18,11 +18,12 @@ public class DMSCoordinates {
 
     @Override
     public String toString() {
-        return String.format("%d° %d' %.5f\", %d° %d' %.5f\"", (int)latDegrees, (int)latMinutes, latSeconds, (int)lonDegrees, (int)lonMinutes, lonSeconds);
+        return String.format("%d° %d' %.5f\", %d° %d' %.5f\"", (int)latDegrees, (int)latMinutes, latSeconds
+                , (int)lonDegrees, (int)lonMinutes, lonSeconds);
     }
 
     public String toList() {
-        return String.format("%d\t%d\t%.5f %d\t%d\t%.5f",
+        return String.format("%d\t%d\t%.5f\t%d\t%d\t%.5f",
                 (int)latDegrees,
                 (int)latMinutes,
                 latSeconds,

@@ -15,11 +15,6 @@ public class CoordinatesFileController {
 
     private final CoordinatesFileService coordinatesFileService;
 
-    @PostMapping("/process-file")
-    public List<String> processCoordinatesFile(@RequestPart MultipartFile file) throws IOException {
-        return coordinatesFileService.processCoordinatesFile(file);
-    }
-
     @PostMapping("/excel")
     public ResponseEntity<byte[]> processExcelFile(@RequestPart MultipartFile file,
                                                    @RequestHeader(value = "Conversion-Type"
@@ -38,17 +33,22 @@ public class CoordinatesFileController {
         return coordinatesFileService.processWordFile(file, conversionType);
     }
 
-    @PostMapping("/xml")
-    public ResponseEntity<byte[]> processXmlFile(@RequestPart MultipartFile file) throws IOException {
-        return coordinatesFileService.processXmlFile(file);
-    }
     @PostMapping("/text")
     public ResponseEntity<byte[]> processTextFile(@RequestPart MultipartFile file,
-                                                  @RequestHeader(value = "Conversion-Type",
-                                                          defaultValue = "")
+                                                  @RequestHeader(value = "Conversion-Type"
+                                                          , defaultValue = "")
                                                   String conversionType)
             throws IOException {
         return coordinatesFileService.processTextFile(file, conversionType);
+    }
+
+    @PostMapping("/csv")
+    public ResponseEntity<byte[]> processCsvFile(@RequestPart MultipartFile file,
+                                                 @RequestHeader(value = "Conversion-Type"
+                                                         , defaultValue = "")
+                                                 String conversionType)
+            throws IOException {
+        return coordinatesFileService.processCsvFile(file, conversionType);
     }
 
 }

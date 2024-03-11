@@ -33,55 +33,76 @@ public class CoordinatesExcelConversionService {
             switch (conversionType) {
                 case "DD":
                     if (textColumnCount == 2){
-                        DDCoordinates ddCoordinates = new DDCoordinates(Double.parseDouble(parts[0]), Double.parseDouble(parts[1]));
+                        DDCoordinates ddCoordinates = new DDCoordinates(Double.parseDouble(parts[0])
+                                , Double.parseDouble(parts[1]));
                         convertedCoordinates.add(ddCoordinates.toList());
                     }
                     if (textColumnCount == 4) {
-                        DMCoordinates dmCoordinates = new DMCoordinates(Double.parseDouble(parts[0]), Double.parseDouble(parts[1]),
-                                Double.parseDouble(parts[2]), Double.parseDouble(parts[3]));
+                        DMCoordinates dmCoordinates = new DMCoordinates(Double.parseDouble(parts[0])
+                                , Double.parseDouble(parts[1])
+                                , Double.parseDouble(parts[2])
+                                , Double.parseDouble(parts[3]));
                         DDCoordinates ddCoordinates = coordinateConversionService.convertDMToDD(dmCoordinates);
                         convertedCoordinates.add(ddCoordinates.toList());
                     }
                     if (textColumnCount == 6) {
-                        DMSCoordinates dmsCoordinates = new DMSCoordinates(Double.parseDouble(parts[0]), Double.parseDouble(parts[1]),
-                                Double.parseDouble(parts[2]), Double.parseDouble(parts[3]), Double.parseDouble(parts[4]), Double.parseDouble(parts[5]));
+                        DMSCoordinates dmsCoordinates = new DMSCoordinates(Double.parseDouble(parts[0])
+                                , Double.parseDouble(parts[1])
+                                , Double.parseDouble(parts[2])
+                                , Double.parseDouble(parts[3])
+                                , Double.parseDouble(parts[4])
+                                , Double.parseDouble(parts[5]));
                         DDCoordinates ddCoordinates = coordinateConversionService.convertDMSToDD(dmsCoordinates);
                         convertedCoordinates.add(ddCoordinates.toList());
                     }
                     break;
                 case "DM":
                     if (textColumnCount == 2) {
-                        DDCoordinates ddCoordinates = new DDCoordinates(Double.parseDouble(parts[0]), Double.parseDouble(parts[1]));
+                        DDCoordinates ddCoordinates = new DDCoordinates(Double.parseDouble(parts[0])
+                                , Double.parseDouble(parts[1]));
                         DMCoordinates dmCoordinates = coordinateConversionService.convertDDToDM(ddCoordinates);
                         convertedCoordinates.add(dmCoordinates.toList());
                     }
                     if (textColumnCount == 4) {
-                        DMCoordinates dmCoordinates = new DMCoordinates(Double.parseDouble(parts[0]), Double.parseDouble(parts[1]),
-                                Double.parseDouble(parts[2]), Double.parseDouble(parts[3]));
+                        DMCoordinates dmCoordinates = new DMCoordinates(Double.parseDouble(parts[0])
+                                , Double.parseDouble(parts[1])
+                                , Double.parseDouble(parts[2])
+                                , Double.parseDouble(parts[3]));
                         convertedCoordinates.add(dmCoordinates.toList());
                     }
                     if (textColumnCount == 6) {
-                        DMSCoordinates dmsCoordinates = new DMSCoordinates(Double.parseDouble(parts[0]), Double.parseDouble(parts[1]),
-                                Double.parseDouble(parts[2]), Double.parseDouble(parts[3]), Double.parseDouble(parts[4]), Double.parseDouble(parts[5]));
+                        DMSCoordinates dmsCoordinates = new DMSCoordinates(Double.parseDouble(parts[0])
+                                , Double.parseDouble(parts[1])
+                                , Double.parseDouble(parts[2])
+                                , Double.parseDouble(parts[3])
+                                , Double.parseDouble(parts[4])
+                                , Double.parseDouble(parts[5]));
                         DMCoordinates dmCoordinates = coordinateConversionService.convertDMSToDM(dmsCoordinates);
                         convertedCoordinates.add(dmCoordinates.toList());
                     }
                     break;
                 case "DMS":
                     if (textColumnCount == 2) {
-                        DDCoordinates ddCoordinates = new DDCoordinates(Double.parseDouble(parts[0]), Double.parseDouble(parts[1]));
+                        DDCoordinates ddCoordinates = new DDCoordinates(Double.parseDouble(parts[0])
+                                , Double.parseDouble(parts[1]));
                         DMSCoordinates dmsCoordinates = coordinateConversionService.convertDDToDMS(ddCoordinates);
                         convertedCoordinates.add(dmsCoordinates.toList());
                     }
                     if (textColumnCount == 4) {
-                        DMCoordinates dmCoordinates = new DMCoordinates(Double.parseDouble(parts[0]), Double.parseDouble(parts[1]),
-                                Double.parseDouble(parts[2]), Double.parseDouble(parts[3]));
+                        DMCoordinates dmCoordinates = new DMCoordinates(Double.parseDouble(parts[0])
+                                , Double.parseDouble(parts[1])
+                                , Double.parseDouble(parts[2])
+                                , Double.parseDouble(parts[3]));
                         DMSCoordinates dmsCoordinates = coordinateConversionService.convertDMToDMS(dmCoordinates);
                         convertedCoordinates.add(dmsCoordinates.toList());
                     }
                     if (textColumnCount == 6) {
-                        DMSCoordinates dmsCoordinates = new DMSCoordinates(Double.parseDouble(parts[0]), Double.parseDouble(parts[1]),
-                                Double.parseDouble(parts[2]), Double.parseDouble(parts[3]), Double.parseDouble(parts[4]), Double.parseDouble(parts[5]));
+                        DMSCoordinates dmsCoordinates = new DMSCoordinates(Double.parseDouble(parts[0])
+                                , Double.parseDouble(parts[1])
+                                , Double.parseDouble(parts[2])
+                                , Double.parseDouble(parts[3])
+                                , Double.parseDouble(parts[4])
+                                , Double.parseDouble(parts[5]));
                         convertedCoordinates.add(dmsCoordinates.toList());
                     }
                     break;

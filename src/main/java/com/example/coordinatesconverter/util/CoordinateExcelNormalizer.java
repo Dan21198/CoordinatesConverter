@@ -148,13 +148,13 @@ public class CoordinateExcelNormalizer {
                     if (cell.getCellType() == CellType.NUMERIC) {
                         cellValue = NormalizerConverterHelper
                                 .convertExcelDDoDM(String.valueOf(cell.getNumericCellValue()));
-                        convertDDToDM(cellValues, cellValue);
+                        splitDDToDMParts(cellValues, cellValue);
                     } else {
                         double numericValue = Double.parseDouble(cell.getStringCellValue()
                                 .replaceAll("(\\d+[.,]\\d+).*", "$1")
                                 .replaceAll("[^\\d.,]+", ""));
                         cellValue = NormalizerConverterHelper.convertExcelDDoDM(String.valueOf(numericValue));
-                        convertDDToDM(cellValues, cellValue);
+                        splitDDToDMParts(cellValues, cellValue);
                     }
                 } else {
 
@@ -200,7 +200,7 @@ public class CoordinateExcelNormalizer {
         return String.join("\t", cellValues).trim();
     }
 
-    private void convertDDToDM(List<String> cellValues, String cellValue) {
+    private void splitDDToDMParts(List<String> cellValues, String cellValue) {
         if (cellValue.contains("°")) {
             String[] parts = cellValue.split("°");
             cellValues.add(parts[0].trim());
