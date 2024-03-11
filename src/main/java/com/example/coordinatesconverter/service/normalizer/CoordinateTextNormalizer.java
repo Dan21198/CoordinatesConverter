@@ -1,19 +1,26 @@
-package com.example.coordinatesconverter.util;
+package com.example.coordinatesconverter.service.normalizer;
 
-import org.springframework.stereotype.Component;
+import com.example.coordinatesconverter.util.NormalizerConverterHelper;
+import org.springframework.stereotype.Service;
+
 import java.util.HashMap;
 import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-@Component
-public class CoordinateNormalizer {
+@Service
+public class CoordinateTextNormalizer {
 
     public String normalizeCoordinatesText(String text) {
         text = normalizeDD(text);
         text = normalizeDM(text);
         text = normalizeDMS(text);
         text = normalizeMixedCoordinates(text);
+        text = replaceDecimalSymbol(text);
+        return text;
+    }
+
+    private static String replaceDecimalSymbol(String text) {
         text = text.replaceAll("(?<=\\d),(?=\\d)", ".");
         return text;
     }

@@ -1,7 +1,6 @@
-package com.example.coordinatesconverter.service;
+package com.example.coordinatesconverter.service.fileConverter;
 
-import com.example.coordinatesconverter.util.CoordinateExcelNormalizer;
-import com.example.coordinatesconverter.util.CoordinateNormalizer;
+import com.example.coordinatesconverter.service.normalizer.CoordinateNormalizerServiceImpl;
 import com.opencsv.*;
 import com.opencsv.exceptions.CsvValidationException;
 import lombok.RequiredArgsConstructor;
@@ -18,29 +17,19 @@ import org.springframework.web.multipart.MultipartFile;
 import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
-
 
 @Service
 @RequiredArgsConstructor
 public class CoordinatesFileServiceImpl implements CoordinatesFileService {
 
-    private final CoordinateNormalizer coordinateNormalizer;
-    private final CoordinateExcelNormalizer coordinateExcelNormalizer;
+    private final CoordinateNormalizerServiceImpl coordinateNormalizer;
     private final CoordinatesFileConversionService coordinatesFileConversionService;
-    private final CoordinatesExcelConversionService coordinatesExcelConversionService;
 
     @Override
     public ResponseEntity<byte[]> processExcelFile(MultipartFile file, String conversionType) throws IOException {
         byte[] fileContent = createProcessedExcelFile(file, conversionType);
-
-        HttpHeaders headers = new HttpHeaders();
-        headers.setContentType(MediaType.APPLICATION_OCTET_STREAM);
-        headers.setContentDispositionFormData("filename", "processed_excel_file.xlsx");
-        headers.setContentLength(fileContent.length);
-
-        return new ResponseEntity<>(fileContent, headers, HttpStatus.OK);
+        return createResponseEntity(fileContent, "processed_excel_file.xlsx", MediaType.APPLICATION_OCTET_STREAM);
     }
 
     private byte[] createProcessedExcelFile(MultipartFile file, String conversionType) throws IOException {
@@ -49,9 +38,9 @@ public class CoordinatesFileServiceImpl implements CoordinatesFileService {
 
         for (int i = 0; i < originalWorkbook.getNumberOfSheets(); i++) {
             Sheet originalSheet = originalWorkbook.getSheetAt(i);
-            List<String> standardizedCoordinates = coordinateExcelNormalizer.normalizeSheet(originalSheet);
+            List<String> standardizedCoordinates = coordinateNormalizer.normalizeExcelSheet(originalSheet);
             if (conversionType != null && !conversionType.isEmpty()) {
-                standardizedCoordinates = coordinatesExcelConversionService.convertCoordinates(conversionType
+                standardizedCoordinates = coordinatesFileConversionService.convertExcelCoordinates(conversionType
                         , standardizedCoordinates);
             }
             Sheet processedSheet = processedWorkbook.createSheet(originalSheet.getSheetName());
@@ -95,7 +84,8 @@ public class CoordinatesFileServiceImpl implements CoordinatesFileService {
                 String text = paragraph.getText();
                 String standardizedText = coordinateNormalizer.normalizeCoordinatesText(text);
                 if (conversionType != null && !conversionType.isEmpty() && !standardizedText.isEmpty()) {
-                    standardizedText = coordinatesFileConversionService.convertCoordinates(conversionType, standardizedText);
+                    standardizedText = coordinatesFileConversionService.convertTextCoordinates(conversionType
+                            , standardizedText);
                 }
                 standardizedCoordinates.add(standardizedText);
             }
@@ -107,19 +97,16 @@ public class CoordinatesFileServiceImpl implements CoordinatesFileService {
 
             ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
             newDocument.write(outputStream);
-            byte[] documentBytes = outputStream.toByteArray();
-
-            HttpHeaders headers = new HttpHeaders();
-            headers.setContentType(MediaType.APPLICATION_OCTET_STREAM);
-            headers.setContentDispositionFormData("filename", "standardized_document.docx");
-
-            return new ResponseEntity<>(documentBytes, headers, HttpStatus.OK);
+            byte[] fileContent = outputStream.toByteArray();
+            return createResponseEntity(fileContent, "processed_excel_file.xlsx"
+                    , MediaType.APPLICATION_OCTET_STREAM);
         }
     }
     @Override
     public ResponseEntity<byte[]> processTextFile(MultipartFile file, String conversionType) throws IOException {
         List<String> processedLines = new ArrayList<>();
-        try (BufferedReader reader = new BufferedReader(new InputStreamReader(file.getInputStream(), StandardCharsets.UTF_8))) {
+        try (BufferedReader reader = new BufferedReader(new InputStreamReader(file.getInputStream()
+                , StandardCharsets.UTF_8))) {
             String line;
             while ((line = reader.readLine()) != null) {
                 if (!line.trim().isEmpty()) {
@@ -127,7 +114,8 @@ public class CoordinatesFileServiceImpl implements CoordinatesFileService {
                     if (conversionType == null || conversionType.isEmpty()) {
                         processedLines.add(processedLine);
                     } else {
-                        String convertedLine = coordinatesFileConversionService.convertCoordinates(conversionType, processedLine);
+                        String convertedLine = coordinatesFileConversionService.convertTextCoordinates(conversionType
+                                , processedLine);
                         processedLines.add(convertedLine);
                     }
                 }
@@ -135,14 +123,9 @@ public class CoordinatesFileServiceImpl implements CoordinatesFileService {
         }
 
         String processedText = String.join("\n", processedLines);
-        byte[] processedContent = processedText.getBytes(StandardCharsets.UTF_8);
-
-        HttpHeaders headers = new HttpHeaders();
-        headers.setContentType(MediaType.TEXT_PLAIN);
-        headers.setContentDispositionFormData("filename", "processed_text_file.txt");
-        headers.setContentLength(processedContent.length);
-
-        return new ResponseEntity<>(processedContent, headers, HttpStatus.OK);
+        byte[] fileContent = processedText.getBytes(StandardCharsets.UTF_8);
+        return createResponseEntity(fileContent, "processed_excel_file.xlsx"
+                , MediaType.APPLICATION_OCTET_STREAM);
     }
 
     @Override
@@ -154,7 +137,8 @@ public class CoordinatesFileServiceImpl implements CoordinatesFileService {
                 .withSeparator(';')
                 .build();
 
-        CSVReader csvReader = new CSVReaderBuilder(new InputStreamReader(file.getInputStream(), StandardCharsets.ISO_8859_1))
+        CSVReader csvReader = new CSVReaderBuilder(new InputStreamReader(file.getInputStream()
+                , StandardCharsets.ISO_8859_1))
                 .withCSVParser(parser)
                 .build();
 
@@ -175,9 +159,9 @@ public class CoordinatesFileServiceImpl implements CoordinatesFileService {
             }
         }
 
-        List<String> standardizedCoordinates = coordinateExcelNormalizer.normalizeSheet(sheet);
+        List<String> standardizedCoordinates = coordinateNormalizer.normalizeExcelSheet(sheet);
         if (conversionType != null && !conversionType.isEmpty()) {
-            standardizedCoordinates = coordinatesExcelConversionService.convertCoordinates(conversionType
+            standardizedCoordinates = coordinatesFileConversionService.convertExcelCoordinates(conversionType
                     , standardizedCoordinates);
         }
         ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
@@ -189,7 +173,7 @@ public class CoordinatesFileServiceImpl implements CoordinatesFileService {
                 CSVWriter.DEFAULT_ESCAPE_CHARACTER,
                 CSVWriter.DEFAULT_LINE_END
         );
-        System.out.println(standardizedCoordinates);
+
         for (String coordinates : standardizedCoordinates) {
             String[] coordinatePair = coordinates.trim().split("\t");
             csvWriter.writeNext(coordinatePair);
@@ -197,12 +181,15 @@ public class CoordinatesFileServiceImpl implements CoordinatesFileService {
         csvWriter.close();
 
         byte[] fileContent = outputStream.toByteArray();
+        return createResponseEntity(fileContent, "processed_excel_file.xlsx"
+                , MediaType.APPLICATION_OCTET_STREAM);
+    }
 
+    private ResponseEntity<byte[]> createResponseEntity(byte[] fileContent, String filename, MediaType contentType) {
         HttpHeaders headers = new HttpHeaders();
-        headers.setContentType(MediaType.APPLICATION_OCTET_STREAM);
-        headers.setContentDispositionFormData("filename", "processed_csv_file.csv");
+        headers.setContentType(contentType);
+        headers.setContentDispositionFormData("filename", filename);
         headers.setContentLength(fileContent.length);
-
         return new ResponseEntity<>(fileContent, headers, HttpStatus.OK);
     }
 

@@ -3,7 +3,7 @@ package com.example.coordinatesconverter.util;
 import com.example.coordinatesconverter.model.DDCoordinates;
 import com.example.coordinatesconverter.model.DMCoordinates;
 import com.example.coordinatesconverter.model.DMSCoordinates;
-import com.example.coordinatesconverter.service.CoordinateConversionServiceImpl;
+import com.example.coordinatesconverter.service.converter.CoordinateConversionServiceImpl;
 
 public class NormalizerConverterHelper {
     private static final CoordinateConversionServiceImpl coordinateConversionService

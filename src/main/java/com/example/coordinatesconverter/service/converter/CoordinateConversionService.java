@@ -1,4 +1,4 @@
-package com.example.coordinatesconverter.service;
+package com.example.coordinatesconverter.service.converter;
 
 import com.example.coordinatesconverter.model.DDCoordinates;
 import com.example.coordinatesconverter.model.DMCoordinates;

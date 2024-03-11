@@ -1,5 +1,6 @@
-package com.example.coordinatesconverter.util;
+package com.example.coordinatesconverter.service.normalizer;
 
+import com.example.coordinatesconverter.util.NormalizerConverterHelper;
 import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
@@ -7,9 +8,10 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import org.apache.poi.ss.usermodel.*;
+import org.springframework.stereotype.Service;
 
 
-@Component
+@Service
 public class CoordinateExcelNormalizer {
 
     public List<String> normalizeSheet(Sheet sheet) {

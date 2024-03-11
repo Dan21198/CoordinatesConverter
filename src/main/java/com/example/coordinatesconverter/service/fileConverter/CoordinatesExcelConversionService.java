@@ -1,8 +1,9 @@
-package com.example.coordinatesconverter.service;
+package com.example.coordinatesconverter.service.fileConverter;
 
 import com.example.coordinatesconverter.model.DDCoordinates;
 import com.example.coordinatesconverter.model.DMCoordinates;
 import com.example.coordinatesconverter.model.DMSCoordinates;
+import com.example.coordinatesconverter.service.converter.CoordinateConversionServiceImpl;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import java.util.ArrayList;

@@ -1,16 +1,16 @@
-package com.example.coordinatesconverter.service;
+package com.example.coordinatesconverter.service.fileConverter;
 
 import com.example.coordinatesconverter.model.DDCoordinates;
 import com.example.coordinatesconverter.model.DMCoordinates;
 import com.example.coordinatesconverter.model.DMSCoordinates;
+import com.example.coordinatesconverter.service.converter.CoordinateConversionServiceImpl;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
-import java.util.Arrays;
 
 @Service
 @RequiredArgsConstructor
-public class CoordinatesFileConversionServiceImpl implements CoordinatesFileConversionService {
+public class CoordinatesTextConversionService {
 
     private final CoordinateConversionServiceImpl coordinateConversionService;
 
@@ -75,10 +75,6 @@ public class CoordinatesFileConversionServiceImpl implements CoordinatesFileConv
                 break;
         }
         return coordinates;
-    }
-    @Override
-    public String convertExcelCoordinates(String conversionType, String coordinates) {
-        return null;
     }
 
     private double extractDegrees(String coordinate) {
