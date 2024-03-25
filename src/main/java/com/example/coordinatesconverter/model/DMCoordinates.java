@@ -3,6 +3,9 @@ package com.example.coordinatesconverter.model;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 
+import java.math.BigDecimal;
+import java.math.RoundingMode;
+
 @Data
 @AllArgsConstructor
 public class DMCoordinates {
@@ -10,6 +13,22 @@ public class DMCoordinates {
     private double latMinutes;
     private double lonDegrees;
     private double lonMinutes;
+
+    public double getLatDegrees() {
+        return (int)latDegrees;
+    }
+
+    public double getLatMinutes() {
+        return new BigDecimal(latMinutes).setScale(7, RoundingMode.HALF_UP).doubleValue();
+    }
+
+    public double getLonDegrees() {
+        return (int)lonDegrees;
+    }
+
+    public double getLonMinutes() {
+        return new BigDecimal(lonMinutes).setScale(7, RoundingMode.HALF_UP).doubleValue();
+    }
 
     @Override
     public String toString() {

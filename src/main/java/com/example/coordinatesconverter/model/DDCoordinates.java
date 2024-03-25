@@ -4,12 +4,23 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 
+import java.math.BigDecimal;
+import java.math.RoundingMode;
+
 @Data
 @Builder
 @AllArgsConstructor
 public class DDCoordinates {
     private double latitude;
     private double longitude;
+    public double getLatitude() {
+        return new BigDecimal(latitude).setScale(7, RoundingMode.HALF_UP).doubleValue();
+    }
+
+    public double getLongitude() {
+        return new BigDecimal(longitude).setScale(7, RoundingMode.HALF_UP).doubleValue();
+    }
+
     @Override
     public String toString() {
         return String.format("%.5f, %.5f", latitude, longitude);
