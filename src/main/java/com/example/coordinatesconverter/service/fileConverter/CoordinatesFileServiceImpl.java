@@ -1,6 +1,6 @@
 package com.example.coordinatesconverter.service.fileConverter;
 
-import com.example.coordinatesconverter.service.normalizer.CoordinateNormalizerServiceImpl;
+import com.example.coordinatesconverter.service.normalizer.CoordinateNormalizerService;
 import com.opencsv.*;
 import com.opencsv.exceptions.CsvValidationException;
 import lombok.RequiredArgsConstructor;
@@ -23,7 +23,7 @@ import java.util.List;
 @RequiredArgsConstructor
 public class CoordinatesFileServiceImpl implements CoordinatesFileService {
 
-    private final CoordinateNormalizerServiceImpl coordinateNormalizer;
+    private final CoordinateNormalizerService coordinateNormalizer;
     private final CoordinatesFileConversionService coordinatesFileConversionService;
 
     @Override

@@ -6,7 +6,4 @@ public class CoordinateConversionException extends RuntimeException {
         super(message);
     }
 
-    public CoordinateConversionException(String message, Throwable cause) {
-        super(message, cause);
-    }
 }

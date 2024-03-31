@@ -41,14 +41,9 @@ public class DMSCoordinates {
         return new BigDecimal(lonSeconds).setScale(7, RoundingMode.HALF_UP).doubleValue();
     }
 
-    private double roundUp(double value) {
-        double scale = Math.pow(10, 5);
-        return Math.ceil(value * scale) / scale;
-    }
-
     @Override
     public String toString() {
-        return String.format("%d° %d' %.5f\", %d° %d' %.5f\"", (int)latDegrees, (int)latMinutes, latSeconds
+        return String.format("%d° %d' %.5f\"N, %d° %d' %.5f\"E", (int)latDegrees, (int)latMinutes, latSeconds
                 , (int)lonDegrees, (int)lonMinutes, lonSeconds);
     }
 
